@@ -1,54 +1,49 @@
 import React, { useState } from 'react';
 import { Container, Form, InputGroup, Button, Row, Col, Carousel } from 'react-bootstrap';
 import { FaSearch, FaMapMarkerAlt, FaBriefcase } from 'react-icons/fa';
-import { Link } from 'react-router-dom'; // Import Link for routing
+import { Link } from 'react-router-dom';
 
-const JobSearch = () => {
+const JobSearch = ({ onSearch }) => {
   const [searchParams, setSearchParams] = useState({ keyword: '', location: '', category: '' });
 
+  // Xử lý sự kiện tìm kiếm
   const handleSearch = (e) => {
     e.preventDefault();
+    if (onSearch) onSearch(searchParams); // Truyền tham số tìm kiếm ra ngoài qua props
     console.log('Searching jobs with params:', searchParams);
   };
 
-  // Define the slides with images and links
+  // Danh sách các slide trong carousel
   const slides = [
     {
       image: 'https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fboschgl_hrbn24_129117.png&w=1920&q=75',
-     
-      title: 'Explore New Career Opportunities',
-      description: 'Find jobs that match your skills and passion.',
+      link: '/company/bosch',
     },
     {
       image: 'https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fvinfast_hrbn424_129058.jpg&w=1920&q=75',
-      title: 'Join a Leading Company',
-      description: 'Advance your career with us.',
+      link: '/company/vinfast',
     },
     {
       image: 'https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fbeiersdorf_hrbn924_128551.jpg&w=1920&q=75',
-      title: 'Unlock Your Potential',
-      description: 'Find opportunities that fit your passion.',
+      link: '/company/beiersdorf',
     },
   ];
 
   return (
-    <div className="job-search-section bg-primary text-white py-3">
+    <div className="job-search-section bg-primary text-white py-4">
       <Container>
-        <Carousel className="mb-3">
-          {/* Carousel Items */}
+        {/* Carousel for promotional banners */}
+        <Carousel className="mb-4">
           {slides.map((slide, index) => (
             <Carousel.Item key={index}>
-              <Link to={slide.link}> {/* Wrap each image with a Link */}
+              <Link to={slide.link}>
                 <img className="d-block w-100" src={slide.image} alt={`Slide ${index + 1}`} />
-                <Carousel.Caption>
-                  <h3>{slide.title}</h3>
-                  <p>{slide.description}</p>
-                </Carousel.Caption>
               </Link>
             </Carousel.Item>
           ))}
         </Carousel>
 
+        {/* Search Form */}
         <Form onSubmit={handleSearch} className="bg-white p-3 rounded-3 shadow">
           <Row className="g-2">
             <Col lg={4}>
@@ -92,11 +87,14 @@ const JobSearch = () => {
                   <option value="">All Categories</option>
                   <option value="it">IT</option>
                   <option value="marketing">Marketing</option>
+                  <option value="finance">Finance</option>
                 </Form.Select>
               </InputGroup>
             </Col>
             <Col lg={2}>
-              <Button type="submit" variant="primary" className="w-100">Search</Button>
+              <Button type="submit" variant="primary" className="w-100">
+                Search
+              </Button>
             </Col>
           </Row>
         </Form>
