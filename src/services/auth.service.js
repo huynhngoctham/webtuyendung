@@ -1,20 +1,44 @@
+// auth.service.js
 import apiClient from './apiClient';
 
-// Gọi API đăng ký ứng viên
 export const registerCandidate = async (data) => {
   try {
-    const response = await apiClient.post('/registerCandidate', data); // URL tương ứng với API backend
+    const response = await apiClient.post('/registerCandidate', data);
     return response.data;
   } catch (error) {
-    throw error.response.data || 'Lỗi không xác định';
+    throw error.response?.data?.message || 'Lỗi đăng ký tài khoản';
   }
 };
 
 export const loginCandidate = async (data) => {
-    try {
-      const response = await apiClient.post('/loginCandidate', data);
-      return response.data; // Trả về dữ liệu sau khi đăng nhập thành công
-    } catch (error) {
-      throw error.response ? error.response.data : error; // Trả về lỗi nếu có
+  try {
+    const response = await apiClient.post('/loginCandidate', data);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
     }
-  };
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'Lỗi đăng nhập';
+  }
+};
+
+export const logoutCandidate = async () => {
+  const token = localStorage.getItem('token');
+  
+  // Xóa token và user data từ localStorage trước
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+
+  // Chỉ gọi API logout nếu có token
+  if (token) {
+    try {
+      await apiClient.post('/logout');
+    } catch (error) {
+      console.log('Logout API error:', error);
+      // Bỏ qua lỗi API vì đã xóa data locally
+    }
+  }
+  
+  return { success: true };
+};
