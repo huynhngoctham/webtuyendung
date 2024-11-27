@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext'; // Import AuthContext
 
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
@@ -9,6 +9,11 @@ import AccountPage from './pages/AccountPage';
 import ProfilePage from './pages/ProfilePage';
 import Dashboard from './components/admin/Dashboard';
 import AdminLogin from './components/auth/AdminLogin';
+import AdminHeader from './components/layout/AdminHeader';
+import FieldManagement from './components/admin/FieldManagement';
+
+
+
 import JobSeekerLogin from './components/auth/JobSeekerLogin';
 import JobSeekerRegister from './components/auth/JobSeekerRegister';
 import EmployerLogin from './components/auth/EmployerLogin';
@@ -19,6 +24,8 @@ import AppliedJobsPage from './components/job-management/applied-jobs/AppliedJob
 import NotificationsPage from './components/job-management/job-notifications/NotificationsPage';
 import PendingJobCardsPage from './components/job-management/pending-jobs/PendingJobCardsPage';
 import JobOpportunities from './components/job/JobOpportunities';
+import EmployerDashboard from './components/employer/EmployerDashboard'; // Ensure correct path
+//import PrivateRoute from './components/auth/PrivateRoute'; // Import PrivateRoute
 
 const Layout = ({ children }) => (
   <div className="d-flex">
@@ -27,46 +34,84 @@ const Layout = ({ children }) => (
   </div>
 );
 
-function App() {
+const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <Header />
         <Routes>
-          {/* Protected routes for logged-in users */}
-          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-          <Route path="/user/account" element={<PrivateRoute><AccountPage /></PrivateRoute>} />
-          <Route path="/applied-jobs" element={<PrivateRoute><AppliedJobsPage /></PrivateRoute>} />
-          <Route path="/jobs/saved" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
-          <Route path="/jobs/pending" element={<PrivateRoute><PendingJobCardsPage /></PrivateRoute>} />
-
           {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/jobseeker/login" element={<JobSeekerLogin />} />
-          <Route path="/jobseeker/register" element={<JobSeekerRegister />} />
-          <Route path="/employer/login" element={<EmployerLogin />} />
-          <Route path="/employer/register" element={<EmployerRegister />} />
-          <Route path="/job/:jobId" element={<JobDetail />} />
-          <Route path="/job-opportunities" element={<JobOpportunities />} />
-
-          {/* Protected routes for admins */}
+          <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+          <Route path="/jobseeker/login" element={<PublicLayout><JobSeekerLogin /></PublicLayout>} />
+          <Route path="/jobseeker/register" element={<PublicLayout><JobSeekerRegister /></PublicLayout>} />
+          <Route path="/employer/login" element={<PublicLayout><EmployerLogin /></PublicLayout>} />
+          <Route path="/employer/register" element={<PublicLayout><EmployerRegister /></PublicLayout>} />
+          <Route path="/job/:jobId" element={<PublicLayout><JobDetail /></PublicLayout>} />
+          <Route path="/job-opportunities" element={<PublicLayout><JobOpportunities /></PublicLayout>} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
+
+          {/* Protected routes */}
+          <Route path="/profile" element={<PrivateLayout><ProfilePage /></PrivateLayout>} />
+          <Route path="/user/account" element={<PrivateLayout><AccountPage /></PrivateLayout>} />
+          <Route path="/applied-jobs" element={<PrivateLayout><AppliedJobsPage /></PrivateLayout>} />
+          <Route path="/jobs/saved" element={<PrivateLayout><NotificationsPage /></PrivateLayout>} />
+          <Route path="/jobs/pending" element={<PrivateLayout><PendingJobCardsPage /></PrivateLayout>} />
+
+          {/* Protected employer route */}
+          <Route path="/employer/dashboard" element={<PrivateLayout role="employer"><EmployerDashboard /></PrivateLayout>} />
+
+          {/* Protected admin route */}
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/field-management" element={<FieldManagement />} />
         </Routes>
-        <Footer />
       </Router>
     </AuthProvider>
   );
-}
-
-const PrivateRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/jobseeker/login" replace />;
-};
-
-const AdminRoute = ({ children }) => {
-  const { isAuthenticated, user } = useAuth();
-  return isAuthenticated && user?.role === 'admin' ? children : <Navigate to="/admin/login" replace />;
 };
 
 export default App;
+
+const PublicLayout = ({ children }) => (
+  <>
+    <Header />
+    {children}
+    <Footer />
+  </>
+);
+
+const PrivateLayout = ({ children, role }) => {
+  const { isAuthenticated, user } = useAuth();
+
+  // Kiểm tra nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
+  if (!isAuthenticated) {
+    return <Navigate to="/jobseeker/login" replace />;
+  }
+
+  // Kiểm tra role, nếu có thì chỉ cho phép người dùng với role tương ứng
+  if (role && user?.role !== role) {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <>
+      <Header />
+      <div className="content-wrapper">{children}</div> {/* Không có Sidebar */}
+      <Footer />
+    </>
+  );
+};
+
+const AdminLayout = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+
+  // Kiểm tra nếu người dùng chưa đăng nhập hoặc không phải là admin
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return (
+    <>
+      <AdminHeader />
+      <div className="content-wrapper">{children}</div> {/* Không có Sidebar */}
+    </>
+  );
+};

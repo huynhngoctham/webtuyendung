@@ -75,6 +75,7 @@ const JobSeekerLogin = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                 
               />
             </Form.Group>
 

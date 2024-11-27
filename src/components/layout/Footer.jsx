@@ -39,15 +39,17 @@ const Footer = () => {
           <Col md={4}>
             <h5 className="mb-3 text-white">Liên hệ</h5>
             <ul className="list-unstyled text-white">
-              <li className="mb-2">Email: contact@jobportal.com</li>
-              <li className="mb-2">Điện thoại: (84) 123 456 789</li>
-              <li>Địa chỉ: Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội</li>
+              <li className="mb-2">Email: </li>
+              <li className="mb-2">Điện thoại: </li>
+              <li>Địa chỉ:</li>
             </ul>
           </Col>
         </Row>
         <hr className="my-4" style={{ borderColor: '#f1f1f1' }} />
         <div className="text-center text-white">
-          <small>&copy; 2024 JobPortal. Tất cả các quyền được bảo lưu.</small>
+          <small>&copy; 2024 
+            
+          </small>
         </div>
       </Container>
     </footer>

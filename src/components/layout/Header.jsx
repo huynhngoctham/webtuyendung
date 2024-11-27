@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import UserMenu from './UserMenu';
 
 const Header = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, userType } = useAuth();
 
   return (
     <Navbar style={{ backgroundColor: '#007bff' }} expand="lg" className="shadow-sm py-3">
@@ -42,7 +42,7 @@ const Header = () => {
                 </Nav.Link>
 
                 {/* User Menu */}
-                <UserMenu user={user} />
+                <UserMenu user={user} userType={userType} />
               </>
             ) : (
               <>
