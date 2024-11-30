@@ -11,6 +11,9 @@ import Dashboard from './components/admin/Dashboard';
 import AdminLogin from './components/auth/AdminLogin';
 import AdminHeader from './components/layout/AdminHeader';
 import FieldManagement from './components/admin/FieldManagement';
+import WorkplaceManagement from './components/admin/WorkplaceManagement';
+import LanguageManagement from './components/admin/LanguageManagement';
+import ItManagement from './components/admin/ItManagement';
 
 
 
@@ -62,6 +65,9 @@ const App = () => {
           {/* Protected admin route */}
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/field-management" element={<FieldManagement />} />
+          <Route path="/admin/workplace-management" element={<WorkplaceManagement />} />
+          <Route path="/admin/language-management" element={<LanguageManagement />} />
+          <Route path="/admin/it-management" element={<ItManagement />} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Row, Col, Button } from 'react-bootstrap';
 
-const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave }) => {
-  const [currentExperience, setCurrentExperience] = useState({
+const WorkExperience = ({ currentExperience = {}, handleInputChange, handleCheckboxChange, handleCancel, handleSave }) => {
+  // Dự phòng nếu currentExperience chưa được khởi tạo
+  const experience = currentExperience || {
     title: '',
     company: '',
     isCurrent: false,
@@ -11,15 +12,6 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
     endMonth: '',
     endYear: '',
     description: '',
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentExperience((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCheckboxChange = (e) => {
-    setCurrentExperience((prev) => ({ ...prev, isCurrent: e.target.checked }));
   };
 
   return (
@@ -32,7 +24,7 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
             <Form.Control
               type="text"
               name="title"
-              value={currentExperience.title}
+              value={experience.title}
               onChange={handleInputChange}
               placeholder="Vd: Quản lý bộ phận"
             />
@@ -44,7 +36,7 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
             <Form.Control
               type="text"
               name="company"
-              value={currentExperience.company}
+              value={experience.company}
               onChange={handleInputChange}
               placeholder="E.g. Công ty Siêu Việt"
             />
@@ -58,7 +50,7 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
               type="checkbox"
               name="isCurrent"
               label="Tôi đang làm ở đây"
-              checked={currentExperience.isCurrent}
+              checked={experience.isCurrent}
               onChange={handleCheckboxChange}
             />
           </Form.Group>
@@ -70,12 +62,12 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
             <Form.Label>Thời gian bắt đầu - Tháng</Form.Label>
             <Form.Select
               name="startMonth"
-              value={currentExperience.startMonth}
+              value={experience.startMonth}
               onChange={handleInputChange}
             >
               <option value="">Tháng</option>
               {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>{`Tháng ${i + 1}`}</option>
+                <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>
               ))}
             </Form.Select>
           </Form.Group>
@@ -86,25 +78,25 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
             <Form.Control
               type="number"
               name="startYear"
-              value={currentExperience.startYear}
+              value={experience.startYear}
               onChange={handleInputChange}
               placeholder="Năm"
             />
           </Form.Group>
         </Col>
-        {!currentExperience.isCurrent && (
+        {!experience.isCurrent && (
           <>
             <Col md={3}>
               <Form.Group className="mb-3">
                 <Form.Label>Thời gian kết thúc - Tháng</Form.Label>
                 <Form.Select
                   name="endMonth"
-                  value={currentExperience.endMonth}
+                  value={experience.endMonth}
                   onChange={handleInputChange}
                 >
                   <option value="">Tháng</option>
                   {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>{`Tháng ${i + 1}`}</option>
+                    <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>
                   ))}
                 </Form.Select>
               </Form.Group>
@@ -115,7 +107,7 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
                 <Form.Control
                   type="number"
                   name="endYear"
-                  value={currentExperience.endYear}
+                  value={experience.endYear}
                   onChange={handleInputChange}
                   placeholder="Năm"
                 />
@@ -131,7 +123,7 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
             <Form.Control
               as="textarea"
               name="description"
-              value={currentExperience.description}
+              value={experience.description}
               onChange={handleInputChange}
               rows={3}
             />
@@ -139,7 +131,15 @@ const WorkExperience = ({ experiences, handleChange, handleCancel, handleSave })
         </Col>
       </Row>
 
-     
+      {/* Buttons */}
+      <div className="d-flex justify-content-end mt-3">
+        <Button variant="secondary" className="me-2" onClick={handleCancel}>
+          Hủy
+        </Button>
+        <Button variant="primary" onClick={() => handleSave(experience)}>
+          Lưu kinh nghiệm
+        </Button>
+      </div>
     </div>
   );
 };

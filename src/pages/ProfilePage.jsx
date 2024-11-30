@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Container, Row, Col, Card } from 'react-bootstrap';
 import Sidebar from '../components/layout/Sidebar';
 import ProfileLayout from '../components/profile/ProfileLayout';
 
 const ProfilePage = () => {
-  // Khởi tạo dữ liệu người dùng ban đầu
   const initialUserState = {
-    email: 'nguyentronlhl@gmail.com',
+    email: '....@gmail.com',
     fullName: 'Tham Huynh',
     birthDate: '',
     gender: '',
@@ -16,65 +15,80 @@ const ProfilePage = () => {
     phone: '',
     avatar: null,
     avatarPreview: null,
+    workExperiences: [],
+    education: {
+      schoolName: '',
+      major: '',
+      degree: '',
+      startMonth: '',
+      startYear: '',
+      endMonth: '',
+      endYear: '',
+    },
+    languageSkills: {
+      language: '',
+      proficiency: ''
+    },
+    itSkills: {
+      software: ''   // Thêm thông tin phần mềm tin học
+    }
   };
 
-  const [user, setUser] = useState(initialUserState); // Trạng thái của người dùng
+  const [user, setUser] = useState(initialUserState);
   const [errors, setErrors] = useState({});
 
-  // Hàm xử lý thay đổi thông tin
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser({
-      ...user,
-      [name]: value,
-    });
+  // Cập nhật thông tin cá nhân
+  const handlePersonalInfoSave = (updatedInfo) => {
+    setUser((prevState) => ({ ...prevState, ...updatedInfo }));
   };
 
-  // Hàm xử lý thay đổi ảnh đại diện
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setUser({
-      ...user,
-      avatar: file,
-      avatarPreview: URL.createObjectURL(file),
-    });
+  const handlePersonalInfoCancel = () => {
+    setUser(initialUserState); // Reset lại thông tin cá nhân
   };
 
-  // Kiểm tra tính hợp lệ của form
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!user.fullName) newErrors.fullName = 'Họ và tên là bắt buộc';
-    if (!user.birthDate) newErrors.birthDate = 'Ngày sinh là bắt buộc';
-    if (!user.gender) newErrors.gender = 'Giới tính là bắt buộc';
-    if (!user.maritalStatus) newErrors.maritalStatus = 'Tình trạng hôn nhân là bắt buộc';
-    if (!user.city) newErrors.city = 'Tỉnh / Thành phố là bắt buộc';
-    if (!user.address) newErrors.address = 'Địa chỉ là bắt buộc';
-    if (!user.phone) {
-      newErrors.phone = 'Số điện thoại là bắt buộc';
-    } else if (!/^[0-9]{10,11}$/.test(user.phone)) {
-      newErrors.phone = 'Số điện thoại không hợp lệ';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  // Cập nhật thông tin chung
+  const handleGeneralInfoSave = (updatedInfo) => {
+    setUser((prevState) => ({ ...prevState, ...updatedInfo }));
   };
 
-  // Xử lý khi người dùng nhấn nút "Lưu thông tin"
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (validateForm()) {
-      console.log('Thông tin cập nhật:', user);
-      alert('Thông tin tài khoản đã được cập nhật');
-    } else {
-      alert('Vui lòng nhập đúng và đầy đủ thông tin.');
-    }
+  const handleGeneralInfoCancel = () => {
+    setUser(initialUserState); // Reset lại thông tin chung
   };
 
-  // Hàm xử lý khi người dùng nhấn nút "Hủy"
-  const handleCancel = () => {
-    setUser(initialUserState); // Khôi phục lại trạng thái ban đầu
+  // Cập nhật thông tin kinh nghiệm làm việc
+  const handleWorkExperienceSave = (updatedExperiences) => {
+    setUser((prevState) => ({ ...prevState, workExperiences: updatedExperiences }));
+  };
+
+  const handleWorkExperienceCancel = () => {
+    setUser(initialUserState); // Reset lại kinh nghiệm làm việc
+  };
+
+  // Cập nhật thông tin học vấn
+  const handleEducationSave = (updatedEducation) => {
+    setUser((prevState) => ({ ...prevState, education: updatedEducation }));
+  };
+
+  const handleEducationCancel = () => {
+    setUser(initialUserState); // Reset lại thông tin học vấn
+  };
+
+  // Cập nhật thông tin ngoại ngữ
+  const handleLanguageSkillsSave = (updatedLanguage) => {
+    setUser((prevState) => ({ ...prevState, languageSkills: updatedLanguage }));
+  };
+
+  const handleLanguageSkillsCancel = () => {
+    setUser(initialUserState); // Reset lại thông tin ngoại ngữ
+  };
+
+  // Cập nhật thông tin tin học
+  const handleITSkillsSave = (updatedSkill) => {
+    setUser((prevState) => ({ ...prevState, itSkills: updatedSkill }));
+  };
+
+  const handleITSkillsCancel = () => {
+    setUser(initialUserState); // Reset lại thông tin tin học
   };
 
   return (
@@ -89,22 +103,22 @@ const ProfilePage = () => {
               <h4>Tạo hồ sơ trực tuyến</h4>
             </Card.Header>
             <Card.Body>
-              <form onSubmit={handleSubmit}>
-                <ProfileLayout
-                  user={user}
-                  errors={errors}
-                  handleChange={handleChange}
-                  handleFileChange={handleFileChange}
-                />
-                <div className="d-flex justify-content-end mt-3">
-                  <Button variant="secondary" className="me-2" onClick={handleCancel}>
-                    Hủy
-                  </Button>
-                  <Button variant="primary" type="submit">
-                    Lưu thông tin
-                  </Button>
-                </div>
-              </form>
+              <ProfileLayout
+                user={user}
+                errors={errors}
+                handlePersonalInfoSave={handlePersonalInfoSave}
+                handlePersonalInfoCancel={handlePersonalInfoCancel}
+                handleGeneralInfoSave={handleGeneralInfoSave}
+                handleGeneralInfoCancel={handleGeneralInfoCancel}
+                handleWorkExperienceSave={handleWorkExperienceSave}
+                handleWorkExperienceCancel={handleWorkExperienceCancel}
+                handleEducationSave={handleEducationSave}
+                handleEducationCancel={handleEducationCancel}
+                handleLanguageSkillsSave={handleLanguageSkillsSave}
+                handleLanguageSkillsCancel={handleLanguageSkillsCancel}
+                handleITSkillsSave={handleITSkillsSave}
+                handleITSkillsCancel={handleITSkillsCancel}
+              />
             </Card.Body>
           </Card>
         </Col>

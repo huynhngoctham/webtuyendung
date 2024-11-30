@@ -127,11 +127,40 @@ const Dashboard = () => {
           <Col md={3} className="mb-4">
             <Card className="h-100 shadow-lg border-light">
               <Card.Body>
-                <Card.Title className="text-success text-center">Quản lý công ty</Card.Title>
+                <Card.Title className="text-success text-center">Quản lý tin học</Card.Title>
                 <Button
                   variant="outline-success"
                   className="w-100"
-                  onClick={() => navigate('/admin/company-management')}
+                  onClick={() => navigate('/admin/it-management')}
+                >
+                  Xem danh sách
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+          {/* Card for Feedback Management */}
+          <Col md={3} className="mb-4">
+            <Card className="h-100 shadow-lg border-light">
+              <Card.Body>
+                <Card.Title className="text-success text-center">Quản lý thành phố</Card.Title>
+                <Button
+                  variant="outline-success"
+                  className="w-100"
+                  onClick={() => navigate('/admin/workplace-management')}
+                >
+                  Xem danh sách
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={3} className="mb-4">
+            <Card className="h-100 shadow-lg border-light">
+              <Card.Body>
+                <Card.Title className="text-success text-center">Quản lý ngôn ngữ</Card.Title>
+                <Button
+                  variant="outline-success"
+                  className="w-100"
+                  onClick={() => navigate('/admin/language-management')}
                 >
                   Xem danh sách
                 </Button>
