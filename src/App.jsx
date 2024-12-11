@@ -14,6 +14,8 @@ import FieldManagement from './components/admin/FieldManagement';
 import WorkplaceManagement from './components/admin/WorkplaceManagement';
 import LanguageManagement from './components/admin/LanguageManagement';
 import ItManagement from './components/admin/ItManagement';
+import LockManagement from './components/admin/LockManagement';
+import PostingManagement from './components/admin/PostingManagement';
 
 
 
@@ -27,7 +29,11 @@ import AppliedJobsPage from './components/job-management/applied-jobs/AppliedJob
 import NotificationsPage from './components/job-management/job-notifications/NotificationsPage';
 import PendingJobCardsPage from './components/job-management/pending-jobs/PendingJobCardsPage';
 import JobOpportunities from './components/job/JobOpportunities';
-import EmployerDashboard from './components/employer/EmployerDashboard'; // Ensure correct path
+import HomeEmployer from './components/employer/HomeEmployer'; 
+import PostingJobs from "./components/employer/PostingJobs";
+//import EmployerHeader from './components/layout/EmployerHeader';
+
+// Ensure correct path
 //import PrivateRoute from './components/auth/PrivateRoute'; // Import PrivateRoute
 
 const Layout = ({ children }) => (
@@ -60,7 +66,10 @@ const App = () => {
           <Route path="/jobs/pending" element={<PrivateLayout><PendingJobCardsPage /></PrivateLayout>} />
 
           {/* Protected employer route */}
-          <Route path="/employer/dashboard" element={<PrivateLayout role="employer"><EmployerDashboard /></PrivateLayout>} />
+          <Route path="/employer/HomeEmployer" element={<HomeEmployer />} />
+          <Route path="/employer/posting-jobs" element={<PostingJobs />} />
+
+
 
           {/* Protected admin route */}
           <Route path="/admin/dashboard" element={<Dashboard />} />
@@ -68,6 +77,8 @@ const App = () => {
           <Route path="/admin/workplace-management" element={<WorkplaceManagement />} />
           <Route path="/admin/language-management" element={<LanguageManagement />} />
           <Route path="/admin/it-management" element={<ItManagement />} />
+          <Route path="/admin/lock-management" element={<LockManagement />} />
+          <Route path="/admin/posting-management" element={<PostingManagement />} />
         </Routes>
       </Router>
     </AuthProvider>
@@ -87,12 +98,14 @@ const PublicLayout = ({ children }) => (
 const PrivateLayout = ({ children, role }) => {
   const { isAuthenticated, user } = useAuth();
 
-  // Kiểm tra nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
+  console.log("isAuthenticated:", isAuthenticated);
+  console.log("User Role:", user?.role);
+  console.log("Required Role:", role);
+
   if (!isAuthenticated) {
     return <Navigate to="/jobseeker/login" replace />;
   }
 
-  // Kiểm tra role, nếu có thì chỉ cho phép người dùng với role tương ứng
   if (role && user?.role !== role) {
     return <Navigate to="/" replace />;
   }
@@ -100,11 +113,12 @@ const PrivateLayout = ({ children, role }) => {
   return (
     <>
       <Header />
-      <div className="content-wrapper">{children}</div> {/* Không có Sidebar */}
+      <div className="content-wrapper">{children}</div>
       <Footer />
     </>
   );
 };
+
 
 const AdminLayout = ({ children }) => {
   const { isAuthenticated, user } = useAuth();

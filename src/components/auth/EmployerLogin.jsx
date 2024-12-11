@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Container, Form, Button, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom"; // Để điều hướng sau khi đăng nhập
-import axios from "axios"; // Để gọi API đăng nhập
+import { useNavigate } from "react-router-dom";
+import { loginEmployer } from "../../services/auth.service"; // Import hàm API từ auth.service.js
 
 const EmployerLogin = () => {
-  const navigate = useNavigate(); // Dùng hook navigate của react-router-dom để điều hướng
+  const navigate = useNavigate(); // Để điều hướng sau khi đăng nhập
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,20 +26,29 @@ const EmployerLogin = () => {
     e.preventDefault();
 
     try {
-      // Gửi request POST đến API đăng nhập nhà tuyển dụng
-      const response = await axios.post("http://127.0.0.1:8000/api/loginEmployer", formData);
-      
-      // Lưu token vào localStorage (hoặc sessionStorage tùy theo yêu cầu)
-      localStorage.setItem("employer_token", response.data.token);
-      
-      setSuccessMessage(response.data.message); // Hiển thị thông báo thành công
-      setErrorMessage(""); // Xóa thông báo lỗi (nếu có)
+      // Gọi API từ auth.service.js
+      const response = await loginEmployer(formData);
 
-      // Điều hướng đến trang EmployerDashboard khi đăng nhập thành công
-      navigate("/EmployerDashboard");
+      // Kiểm tra nếu API trả về response hợp lệ và chứa token
+      if (response.token) {
+        // Lưu token vào localStorage
+        localStorage.setItem("employer_token", response.token);
+
+        // Hiển thị thông báo thành công
+        setSuccessMessage("Đăng nhập thành công!");
+
+        // Xóa thông báo lỗi nếu có
+        setErrorMessage("");
+
+        // Điều hướng đến trang EmployerDashboard khi đăng nhập thành công
+        navigate("/employer/HomeEmployer");
+      } else {
+        // Nếu không có token, hiển thị lỗi
+        setErrorMessage("Đăng nhập không thành công, vui lòng thử lại!");
+      }
     } catch (error) {
       // Hiển thị thông báo lỗi khi có lỗi xảy ra
-      setErrorMessage("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
+      setErrorMessage(error.response?.data?.message || "Đăng nhập thất bại"); // Lấy thông báo lỗi từ API
       setSuccessMessage(""); // Xóa thông báo thành công (nếu có)
     }
   };
@@ -48,13 +57,13 @@ const EmployerLogin = () => {
     <Container className="d-flex justify-content-center align-items-center vh-100">
       <Form style={{ width: "400px" }} onSubmit={handleLogin}>
         <h3 className="text-center mb-4">Đăng nhập dành cho Nhà tuyển dụng</h3>
-        
+
         {/* Hiển thị thông báo lỗi nếu có */}
         {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-        
+
         {/* Hiển thị thông báo thành công nếu có */}
         {successMessage && <Alert variant="success">{successMessage}</Alert>}
-        
+
         <Form.Group className="mb-3" controlId="formEmail">
           <Form.Label>Email công ty</Form.Label>
           <Form.Control
@@ -79,10 +88,8 @@ const EmployerLogin = () => {
           />
         </Form.Group>
 
-        <Form.Group className="mb-3" controlId="formRemember">
-          <Form.Check type="checkbox" label="Ghi nhớ đăng nhập" />
-        </Form.Group>
-
+        {/* Đã bỏ phần ghi nhớ mật khẩu */}
+        
         <div className="d-flex justify-content-between align-items-center">
           <Button variant="primary" type="submit">
             Đăng nhập

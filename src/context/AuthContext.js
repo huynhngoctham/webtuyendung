@@ -6,11 +6,10 @@ export const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Track if user is authenticated
-  const [user, setUser] = useState(null); // Store user information
-  const [loading, setLoading] = useState(true); // Track if authentication status is being checked
+  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const [user, setUser] = useState(null); 
+  const [loading, setLoading] = useState(true); 
 
-  // Run once on component mount to check authentication status
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userInfo = localStorage.getItem('user');
@@ -18,43 +17,40 @@ export const AuthProvider = ({ children }) => {
     if (token && userInfo) {
       try {
         const parsedUser = JSON.parse(userInfo);
-        setUser(parsedUser); // Set user information
-        setIsAuthenticated(true); // Mark as authenticated
+        setUser(parsedUser); 
+        setIsAuthenticated(true); 
       } catch (error) {
         console.error("Error parsing user data:", error);
-        logout(); // Logout if parsing fails
+        logout(); 
       }
     } else {
-      setIsAuthenticated(false); // Mark as unauthenticated
+      setIsAuthenticated(false);
     }
-    setLoading(false); // Mark as finished loading
+    setLoading(false); 
   }, []);
 
-  // Function to log in a user
   const login = (userData, token) => {
     try {
-      localStorage.setItem('token', token); // Save token in localStorage
-      localStorage.setItem('user', JSON.stringify(userData)); // Save user data
-      setUser(userData); // Update state with user data
-      setIsAuthenticated(true); // Mark as authenticated
+      localStorage.setItem('token', token); 
+      localStorage.setItem('user', JSON.stringify(userData)); 
+      setUser(userData); 
+      setIsAuthenticated(true); 
     } catch (error) {
       console.error("Error during login:", error);
     }
   };
 
-  // Function to log out a user
   const logout = () => {
     try {
-      localStorage.removeItem('token'); // Remove token
-      localStorage.removeItem('user'); // Remove user data
-      setUser(null); // Clear user state
-      setIsAuthenticated(false); // Mark as unauthenticated
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      setIsAuthenticated(false);
     } catch (error) {
       console.error("Error during logout:", error);
     }
   };
 
-  // Provide context to children
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout, loading }}>
       {!loading && children}

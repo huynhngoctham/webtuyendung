@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Container, Form, Button, Alert } from "react-bootstrap";
-import axios from "axios";
+import { registerEmployer } from "../../services/auth.service"; // Import hàm API từ auth.service.js
 
 const EmployerRegister = () => {
   // State để lưu dữ liệu form
@@ -30,13 +30,13 @@ const EmployerRegister = () => {
     e.preventDefault();
 
     try {
-      // Gửi request POST đến API đăng ký nhà tuyển dụng
-      const response = await axios.post("http://127.0.0.1:8000/api/registerEmployer", formData);
-      setSuccessMessage(response.data.message); // Hiển thị thông báo thành công
+      // Gọi hàm API từ auth.service.js
+      const response = await registerEmployer(formData);
+      setSuccessMessage(response.message); // Hiển thị thông báo thành công
       setErrorMessage(""); // Xóa thông báo lỗi (nếu có)
     } catch (error) {
       // Hiển thị thông báo lỗi khi có lỗi xảy ra
-      setErrorMessage("Đăng ký thất bại. Vui lòng thử lại.");
+      setErrorMessage(error); // Lấy lỗi từ auth.service.js
       setSuccessMessage(""); // Xóa thông báo thành công (nếu có)
     }
   };
@@ -45,12 +45,12 @@ const EmployerRegister = () => {
     <Container className="d-flex justify-content-center align-items-center vh-100">
       <Form style={{ width: "400px" }} onSubmit={handleRegister}>
         <h3 className="text-center mb-4">Đăng ký dành cho Nhà tuyển dụng</h3>
-        
+
         {/* Hiển thị thông báo lỗi nếu có */}
         {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
         {/* Hiển thị thông báo thành công nếu có */}
         {successMessage && <Alert variant="success">{successMessage}</Alert>}
-        
+
         <Form.Group className="mb-3" controlId="formCompanyName">
           <Form.Label>Tên công ty</Form.Label>
           <Form.Control
@@ -62,7 +62,7 @@ const EmployerRegister = () => {
             required
           />
         </Form.Group>
-        
+
         <Form.Group className="mb-3" controlId="formEmail">
           <Form.Label>Email công ty</Form.Label>
           <Form.Control

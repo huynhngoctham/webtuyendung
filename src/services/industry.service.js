@@ -2,16 +2,14 @@ import apiClient from './apiClient';
 
 // Lấy danh sách tất cả các ngành nghề
 export const getAllIndustries = async () => {
-    try {
-      // Gọi API mà không cần token
-      const response = await apiClient.get('/admin/getIndustry'); // Đảm bảo đúng endpoint
-      return response.data; // Trả về dữ liệu từ API
-    } catch (error) {
-      console.error('Lỗi khi lấy danh sách ngành:', error);
-      throw new Error(error.response?.data?.message || 'Không thể tải danh sách ngành');
-    }
-  };
-
+  try {
+    const response = await apiClient.get('/admin/getIndustry'); // Đảm bảo đúng endpoint
+    return response.data; // Trả về dữ liệu từ API
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách ngành:', error);
+    throw new Error(error.response?.data?.message || 'Không thể tải danh sách ngành');
+  }
+};
 // Thêm mới ngành nghề
 export const addIndustry = async (data) => {
   try {

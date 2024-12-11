@@ -9,20 +9,16 @@ const JobSeekerLogin = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   useEffect(() => {
-    // Kiểm tra trong localStorage xem người dùng đã chọn ghi nhớ đăng nhập chưa
-    const rememberMeStored = localStorage.getItem('rememberMe');
-    if (rememberMeStored === 'true') {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        login(user, ''); // Gọi hàm login với dữ liệu từ localStorage
-        navigate('/'); // Chuyển hướng về trang chủ nếu đã đăng nhập
-      }
+    // Kiểm tra trong localStorage xem người dùng đã đăng nhập chưa
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      login(user, ''); // Gọi hàm login với dữ liệu từ localStorage
+      navigate('/'); // Chuyển hướng về trang chủ nếu đã đăng nhập
     }
   }, [login, navigate]);
 
@@ -37,15 +33,8 @@ const JobSeekerLogin = () => {
       // Lưu thông tin đăng nhập vào context
       login(response.user, response.token);
 
-      // Lưu tùy chọn "Ghi nhớ đăng nhập" vào localStorage
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('token', response.token);
-      }
-
-      alert('Đăng nhập thành công!');
-      navigate('/'); // Chuyển hướng về trang chủ
+      // Chuyển hướng về trang chủ ngay lập tức sau khi đăng nhập thành công
+      navigate('/');
     } catch (err) {
       console.error('Login Error:', err);
       // Nếu không có response hoặc lỗi không có message
@@ -75,7 +64,6 @@ const JobSeekerLogin = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                 
               />
             </Form.Group>
 
@@ -91,12 +79,6 @@ const JobSeekerLogin = () => {
             </Form.Group>
 
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <Form.Check 
-                type="checkbox" 
-                label="Ghi nhớ đăng nhập" 
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-              />
               <Link to="/forgot-password">Quên mật khẩu?</Link>
             </div>
 

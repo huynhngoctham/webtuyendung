@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { FaBell } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';  // Thêm useNavigate để điều hướng
 import { useAuth } from '../../context/AuthContext';
 import UserMenu from './UserMenu';
+import EmployerHeader from './EmployerHeader'; // Import EmployerHeader
 
 const Header = () => {
-  const { isAuthenticated, user, userType } = useAuth();
+  const { isAuthenticated, user, userType, logout } = useAuth();
+  const navigate = useNavigate();  // Hook để điều hướng
+
+  // Kiểm tra nếu người dùng là nhà tuyển dụng thì điều hướng tới Dashboard
+  useEffect(() => {
+    if (isAuthenticated && userType === 'employer') {
+      navigate('/employer/dashboard');
+    }
+  }, [isAuthenticated, userType, navigate]);
 
   return (
     <Navbar style={{ backgroundColor: '#007bff' }} expand="lg" className="shadow-sm py-3">
@@ -33,20 +42,17 @@ const Header = () => {
           <Nav className="ms-auto d-flex align-items-center">
             {isAuthenticated ? (
               <>
-                {/* Notifications */}
-                <Nav.Link as={Link} to="/notifications" className="text-white me-3 position-relative">
-                  <FaBell size={20} />
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    99+
-                  </span>
-                </Nav.Link>
-
-                {/* User Menu */}
-                <UserMenu user={user} userType={userType} />
+                {/* Nếu là nhà tuyển dụng */}
+                {userType === 'employer' ? (
+                  <EmployerHeader user={user} logout={logout} />
+                ) : (
+                  // Hiển thị UserMenu nếu người dùng là jobseeker
+                  <UserMenu user={user} />
+                )}
               </>
             ) : (
               <>
-                {/* Jobseeker Menu */}
+                {/* Menu cho người tìm việc */}
                 <NavDropdown
                   title={<span className="text-white fw-semibold">Người tìm việc</span>}
                   id="jobseeker-dropdown"
@@ -56,7 +62,7 @@ const Header = () => {
                   <NavDropdown.Item as={Link} to="/jobseeker/login">Đăng nhập</NavDropdown.Item>
                 </NavDropdown>
 
-                {/* Employer Menu */}
+                {/* Menu cho nhà tuyển dụng */}
                 <NavDropdown
                   title={<span className="text-white fw-semibold">Nhà tuyển dụng</span>}
                   id="employer-dropdown"

@@ -1,3 +1,4 @@
+// workplace.service.js
 import apiClient from './apiClient'; // Import cấu hình axios từ file của bạn
 
 const WorkplaceService = {

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import Sidebar from '../components/layout/Sidebar';
 import ProfileLayout from '../components/profile/ProfileLayout';
+import ProfileService from '../services/profile.service';
 
 const ProfilePage = () => {
   const initialUserState = {
@@ -30,65 +31,55 @@ const ProfilePage = () => {
       proficiency: ''
     },
     itSkills: {
-      software: ''   // Thêm thông tin phần mềm tin học
-    }
+      software: '' // Thông tin phần mềm tin học
+    },
   };
 
   const [user, setUser] = useState(initialUserState);
   const [errors, setErrors] = useState({});
 
-  // Cập nhật thông tin cá nhân
-  const handlePersonalInfoSave = (updatedInfo) => {
-    setUser((prevState) => ({ ...prevState, ...updatedInfo }));
+  // Hàm cập nhật thông tin và xử lý thay đổi cho từng phần
+  const updateUserSection = (section, updatedData) => {
+    setUser((prevState) => ({ ...prevState, [section]: updatedData }));
   };
 
-  const handlePersonalInfoCancel = () => {
-    setUser(initialUserState); // Reset lại thông tin cá nhân
+  const resetUserSection = () => {
+    setUser(initialUserState); // Reset về trạng thái ban đầu
+    setErrors({}); // Clear any errors on reset
   };
 
-  // Cập nhật thông tin chung
-  const handleGeneralInfoSave = (updatedInfo) => {
-    setUser((prevState) => ({ ...prevState, ...updatedInfo }));
+  // Hàm kiểm tra lỗi cho từng phần
+  const validateProfile = () => {
+    const newErrors = {};
+
+    // Kiểm tra thông tin cá nhân
+    if (!user.fullName) newErrors.fullName = "Họ và tên không được để trống";
+    if (!user.email || !/\S+@\S+\.\S+/.test(user.email)) newErrors.email = "Email không hợp lệ";
+    if (!user.phone) newErrors.phone = "Số điện thoại không được để trống";
+    if (!user.address) newErrors.address = "Địa chỉ không được để trống";
+    
+    setErrors(newErrors); // Cập nhật lỗi vào trạng thái
+    return Object.keys(newErrors).length === 0; // Nếu không có lỗi thì trả về true
   };
 
-  const handleGeneralInfoCancel = () => {
-    setUser(initialUserState); // Reset lại thông tin chung
+  // Hàm gọi API lấy lại dữ liệu mới nhất
+  const fetchProfile = async () => {
+    try {
+      const profileData = await ProfileService.getProfile();
+      setUser(profileData);  // Cập nhật thông tin hồ sơ
+    } catch (err) {
+      console.error('Lỗi khi lấy dữ liệu hồ sơ:', err);
+    }
   };
 
-  // Cập nhật thông tin kinh nghiệm làm việc
-  const handleWorkExperienceSave = (updatedExperiences) => {
-    setUser((prevState) => ({ ...prevState, workExperiences: updatedExperiences }));
-  };
-
-  const handleWorkExperienceCancel = () => {
-    setUser(initialUserState); // Reset lại kinh nghiệm làm việc
-  };
-
-  // Cập nhật thông tin học vấn
-  const handleEducationSave = (updatedEducation) => {
-    setUser((prevState) => ({ ...prevState, education: updatedEducation }));
-  };
-
-  const handleEducationCancel = () => {
-    setUser(initialUserState); // Reset lại thông tin học vấn
-  };
-
-  // Cập nhật thông tin ngoại ngữ
-  const handleLanguageSkillsSave = (updatedLanguage) => {
-    setUser((prevState) => ({ ...prevState, languageSkills: updatedLanguage }));
-  };
-
-  const handleLanguageSkillsCancel = () => {
-    setUser(initialUserState); // Reset lại thông tin ngoại ngữ
-  };
-
-  // Cập nhật thông tin tin học
-  const handleITSkillsSave = (updatedSkill) => {
-    setUser((prevState) => ({ ...prevState, itSkills: updatedSkill }));
-  };
-
-  const handleITSkillsCancel = () => {
-    setUser(initialUserState); // Reset lại thông tin tin học
+  const handleSaveProfile = () => {
+    if (validateProfile()) {
+      // Handle save logic here, call API or something else.
+      console.log("Profile saved successfully:", user);
+      fetchProfile();  // Gọi lại fetchProfile để lấy thông tin mới
+    } else {
+      console.log("Profile validation failed");
+    }
   };
 
   return (
@@ -103,21 +94,20 @@ const ProfilePage = () => {
               <h4>Tạo hồ sơ trực tuyến</h4>
             </Card.Header>
             <Card.Body>
+              {/* Hiển thị lỗi nếu có */}
+              {Object.keys(errors).length > 0 && (
+                <Alert variant="danger">
+                  <ul>
+                    {Object.keys(errors).map((key) => (
+                      <li key={key}>{errors[key]}</li>
+                    ))}
+                  </ul>
+                </Alert>
+              )}
+              
               <ProfileLayout
-                user={user}
-                errors={errors}
-                handlePersonalInfoSave={handlePersonalInfoSave}
-                handlePersonalInfoCancel={handlePersonalInfoCancel}
-                handleGeneralInfoSave={handleGeneralInfoSave}
-                handleGeneralInfoCancel={handleGeneralInfoCancel}
-                handleWorkExperienceSave={handleWorkExperienceSave}
-                handleWorkExperienceCancel={handleWorkExperienceCancel}
-                handleEducationSave={handleEducationSave}
-                handleEducationCancel={handleEducationCancel}
-                handleLanguageSkillsSave={handleLanguageSkillsSave}
-                handleLanguageSkillsCancel={handleLanguageSkillsCancel}
-                handleITSkillsSave={handleITSkillsSave}
-                handleITSkillsCancel={handleITSkillsCancel}
+                user={user}           // Truyền thông tin người dùng hiện tại
+                onSave={fetchProfile} // Truyền hàm fetchProfile vào onSave để sau khi lưu sẽ gọi lại
               />
             </Card.Body>
           </Card>

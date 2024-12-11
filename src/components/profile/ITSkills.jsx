@@ -1,39 +1,76 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Dropdown, DropdownButton, ListGroup, Row, Col } from 'react-bootstrap';
-import ITService from '../../services/it.service'; // Import IT service
+import { Dropdown, DropdownButton, ListGroup, Row, Col, Button } from 'react-bootstrap';
+import ITService from '../../services/it.service'; // Lấy danh sách chứng chỉ IT
+import ITProfileService from '../../services/it_profile.service'; // Quản lý dữ liệu IT cho hồ sơ
 
-const ITSkills = ({ itSkills, onSave, onCancel }) => {
-  const [softwareList, setSoftwareList] = useState([]); // Dữ liệu phần mềm từ API
-  const [selectedSkills, setSelectedSkills] = useState([]); // Các phần mềm đã chọn
+const ITSkills = ({ profileId }) => {
+  const [softwareList, setSoftwareList] = useState([]); // Danh sách chứng chỉ IT từ API
+  const [selectedSkills, setSelectedSkills] = useState([]); // Chứng chỉ IT đã chọn
 
   useEffect(() => {
-    const fetchSoftwareList = async () => {
+    const fetchData = async () => {
       try {
-        const data = await ITService.getAllIT(); // Lấy dữ liệu từ API
-        setSoftwareList(data); // Cập nhật danh sách phần mềm
+        // Lấy danh sách chứng chỉ IT từ API
+        const allSoftware = await ITService.getAllIT();
+        setSoftwareList(allSoftware);
+
+        // Lấy chứng chỉ IT từ hồ sơ người dùng
+        const userSkills = await ITProfileService.getITDetails(profileId);
+        setSelectedSkills(userSkills); // API trả về danh sách chứa `id`, `it_id`
       } catch (error) {
-        console.error('Lỗi khi lấy danh sách phần mềm:', error);
+        console.error('Lỗi khi lấy dữ liệu:', error);
       }
     };
+    fetchData();
+  }, [profileId]);
 
-    fetchSoftwareList();
-  }, []);
+  // Xử lý chọn chứng chỉ IT
+  const handleSelectSoftware = async (software) => {
+    // Nếu đã chọn chứng chỉ này hoặc vượt quá giới hạn, không thêm mới
+    if (selectedSkills.some((item) => item.it_id === software.id)) {
+      alert('Chứng chỉ này đã được thêm.');
+      return;
+    }
+    if (selectedSkills.length >= 4) {
+      alert('Bạn chỉ có thể chọn tối đa 4 chứng chỉ.');
+      return;
+    }
 
-  // Hàm xử lý chọn phần mềm
-  const handleSelectSoftware = (software) => {
-    if (selectedSkills.length < 4 && !selectedSkills.includes(software)) {
-      setSelectedSkills([...selectedSkills, software]);
+    try {
+      // Gửi yêu cầu thêm chứng chỉ lên API
+      const newSkill = await ITProfileService.addITDetails({
+        profile_id: profileId,
+        it_id: software.id,
+      });
+
+      // Cập nhật danh sách chứng chỉ đã chọn
+      setSelectedSkills([...selectedSkills, { id: newSkill.id, it_id: software.id }]);
+      alert('Thêm chứng chỉ thành công!');
+    } catch (error) {
+      console.error('Lỗi khi thêm chứng chỉ:', error);
+      alert('Có lỗi xảy ra khi thêm chứng chỉ.');
     }
   };
 
-  // Hàm xử lý xóa phần mềm khỏi danh sách đã chọn
-  const handleRemoveSoftware = (software) => {
-    setSelectedSkills(selectedSkills.filter((item) => item !== software));
+  // Xử lý xóa chứng chỉ IT
+  const handleRemoveSoftware = async (id) => {
+    try {
+      // Gửi yêu cầu xóa chứng chỉ lên API
+      await ITProfileService.deleteITDetails(id);
+
+      // Cập nhật danh sách chứng chỉ đã chọn
+      setSelectedSkills(selectedSkills.filter((item) => item.id !== id));
+      alert('Xóa chứng chỉ thành công!');
+    } catch (error) {
+      console.error('Lỗi khi xóa chứng chỉ:', error.response || error);
+      alert('Có lỗi xảy ra khi xóa chứng chỉ.');
+    }
   };
 
-  // Gửi dữ liệu lên cha (onSave)
-  const handleSave = () => {
-    onSave({ software: selectedSkills });
+  // Lấy tên chứng chỉ từ ID
+  const getSoftwareName = (itId) => {
+    const software = softwareList.find((item) => item.id === itId);
+    return software ? software.name : '';
   };
 
   return (
@@ -41,72 +78,48 @@ const ITSkills = ({ itSkills, onSave, onCancel }) => {
       <h5 className="mb-4">Thông tin tin học</h5>
       <Row className="mb-3">
         <Col md={8}>
-          <Form.Group className="mb-3">
-            <Form.Label>Chọn chứng chỉ</Form.Label>
-            <div className="d-flex flex-column">
-              {/* Dropdown */}
-              <DropdownButton
-                id="dropdown-software"
-                title={selectedSkills.length ? 'Chọn chứng chỉ' : 'Chọn chứng chỉ'}
-                variant="outline-primary"
-                disabled={selectedSkills.length >= 4}
-                style={{ width: '100%' }}
-              >
-                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                  {softwareList.map((software) => (
-                    <Dropdown.Item
-                      key={software.id}
-                      onClick={() => handleSelectSoftware(software.name)}
-                    >
-                      {software.name}
-                    </Dropdown.Item>
-                  ))}
-                </div>
-              </DropdownButton>
-            </div>
-          </Form.Group>
+          <div className="d-flex flex-column">
+            <DropdownButton
+              id="dropdown-software"
+              title="Chọn chứng chỉ"
+              variant="outline-primary"
+              disabled={selectedSkills.length >= 4}
+              style={{ width: '100%' }}
+            >
+              <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                {softwareList.map((software) => (
+                  <Dropdown.Item
+                    key={software.id}
+                    onClick={() => handleSelectSoftware(software)}
+                  >
+                    {software.name}
+                  </Dropdown.Item>
+                ))}
+              </div>
+            </DropdownButton>
+          </div>
         </Col>
 
         <Col md={4}>
-          <div>
-            {/* Hiển thị các chứng chỉ đã chọn, gọn bên phải */}
-            <ListGroup>
-              {selectedSkills.map((software, index) => (
-                <ListGroup.Item
-                  key={index}
-                  className="d-flex justify-content-between align-items-center"
-                  style={{
-                    fontSize: '0.85rem',
-                    maxWidth: '100%', // Đảm bảo không quá rộng
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
+          <ListGroup>
+            {selectedSkills.map((skill) => (
+              <ListGroup.Item
+                key={skill.id}
+                className="d-flex justify-content-between align-items-center"
+              >
+                {getSoftwareName(skill.it_id)}
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleRemoveSoftware(skill.id)}
                 >
-                  {software}
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleRemoveSoftware(software)}
-                    style={{ padding: '0.2rem 0.5rem' }}
-                  >
-                    Xóa
-                  </Button>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          </div>
+                  Xóa
+                </Button>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
         </Col>
       </Row>
-
-      <div className="d-flex justify-content-end mt-3">
-        <Button variant="secondary" className="me-2" onClick={onCancel}>
-          Hủy
-        </Button>
-        <Button variant="primary" onClick={handleSave}>
-          Lưu tin học
-        </Button>
-      </div>
     </div>
   );
 };
