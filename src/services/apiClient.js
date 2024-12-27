@@ -1,44 +1,65 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // Đảm bảo đúng URL
+  baseURL: 'http://127.0.0.1:8000/api',
   headers: {
-    'Content-Type': 'application/json', // Đảm bảo loại dữ liệu đúng
+    'Content-Type': 'application/json',
   },
 });
 
 // Interceptor trước khi gửi request
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token'); // Lấy token từ localStorage
-    console.log('Token gửi đi: ', token); // Thêm log để kiểm tra token
+    let token;
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // Đảm bảo token được gửi đúng trong header
+    // Lấy token từ localStorage nếu có
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/employer')) {
+      token = localStorage.getItem('employer_token');
+    } else {
+      token = localStorage.getItem('token');
     }
+
+    // Thêm token vào header Authorization nếu tồn tại
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    console.log('Config URL:', config.url);
+    console.log('Token gửi đi:', token || 'Không có token (không cần thiết)');
 
     return config;
   },
   (error) => {
-    console.error('Lỗi request: ', error); // Log lỗi request
+    console.error('Lỗi request: ', error);
     return Promise.reject(error);
   }
 );
 
 // Interceptor xử lý response
 apiClient.interceptors.response.use(
-  (response) => response, // Trả về response nếu thành công
+  (response) => response,
   async (error) => {
-    console.error('Lỗi response: ', error.response); // Log lỗi response để kiểm tra
+    console.error('Lỗi response: ', error.response);
 
+    // Xử lý lỗi 401 - Token không hợp lệ hoặc hết hạn
     if (error.response?.status === 401) {
       console.warn('Token hết hạn hoặc không hợp lệ.');
-      localStorage.removeItem('token');
+
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/employer')) {
+        localStorage.removeItem('employer_token');
+        window.location.href = '/employer/login';
+      } else {
+        localStorage.removeItem('token');
+        window.location.href = '/jobseeker/login';
+      }
+
+      // Xóa thông tin người dùng
       localStorage.removeItem('user');
-      window.location.href = '/jobseeker/login'; // Đảm bảo chuyển hướng đúng
     }
 
-    return Promise.reject(error); // Trả về lỗi để xử lý tiếp
+    return Promise.reject(error);
   }
 );
 

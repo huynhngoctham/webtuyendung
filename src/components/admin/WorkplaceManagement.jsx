@@ -118,7 +118,7 @@ const WorkplaceManagement = () => {
 
       <Row>
         <Col className="text-center">
-          <h3 className="text-success mb-4">Quản lý Workplace</h3>
+          <h3 className="text-success mb-4">Quản lý Thành phố</h3>
 
           {/* Tìm kiếm */}
           <InputGroup className="mb-4 mx-auto" style={{ maxWidth: '400px' }}>
@@ -169,7 +169,7 @@ const WorkplaceManagement = () => {
                 ) : (
                   <tr>
                     <td colSpan="3" className="text-center text-muted">
-                      Không tìm thấy workplace nào.
+                      Không tìm thấy Thành Phố nào.
                     </td>
                   </tr>
                 )}
@@ -179,7 +179,7 @@ const WorkplaceManagement = () => {
 
           {/* Nút thêm workplace */}
           <Button variant="success" onClick={() => handleShowModal()}>
-            Thêm workplace
+            Thêm Thành Phố
           </Button>
         </Col>
       </Row>

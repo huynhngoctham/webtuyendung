@@ -43,7 +43,7 @@ const HomeEmployer = () => {
               <h5 className="mb-4">QUẢN LÝ</h5>
               <ListGroup variant="flush">
                 <ListGroup.Item>
-                  <Link to="/employer/company-info" className="text-decoration-none text-dark">
+                  <Link to="/employer/post-job" className="text-decoration-none text-dark">
                     <FaBriefcase className="me-2" />
                     Quản lý tin tuyển dụng
                   </Link>

@@ -4,7 +4,7 @@ import JobList from '../components/job/JobList';
 import TopCompanies from '../components/job/TopCompanies';
 import BestJobs from '../components/job/BestJobs';
 import KeyIndustries from '../components/job/KeyIndustries';
-import RecommendedJobs from '../components/job/RecommendedJobs';
+// import RecommendedJobs from '../components/job/RecommendedJobs';
 import { Container, Row, Col } from 'react-bootstrap';
 
 const Home = () => {
@@ -24,7 +24,7 @@ const Home = () => {
         <TopCompanies />
         <BestJobs />
         <KeyIndustries />
-        <RecommendedJobs />
+        {/* <RecommendedJobs /> */}
       </Container>
     </div>
   );

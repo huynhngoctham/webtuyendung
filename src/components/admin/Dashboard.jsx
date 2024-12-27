@@ -74,7 +74,7 @@ const Dashboard = () => {
           </Col>
 
           {/* Card for Billing Management */}
-          <Col md={3} className="mb-4">
+          {/* <Col md={3} className="mb-4">
             <Card className="h-100 shadow-lg border-light">
               <Card.Body>
                 <Card.Title className="text-success text-center">Quản lý dịch vụ và hóa đơn</Card.Title>
@@ -87,7 +87,7 @@ const Dashboard = () => {
                 </Button>
               </Card.Body>
             </Card>
-          </Col>
+          </Col> */}
         </Row>
 
         <Row className="my-4">

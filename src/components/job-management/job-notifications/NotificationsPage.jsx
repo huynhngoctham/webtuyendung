@@ -1,28 +1,13 @@
-// NotificationsPage.jsx
+// src/components/job-management/job-notifications/NotificationsPage.jsx
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import Sidebar from '../../layout/Sidebar';
-import NotificationList from './NotificationList';
+import { useLocation } from 'react-router-dom';
+import { Container, Row, Col } from 'react-bootstrap';  // Nhớ nhập các thành phần từ react-bootstrap
+import Sidebar from '../../layout/Sidebar';  // Đảm bảo Sidebar được nhập đúng
+import NotificationList from './NotificationList';  // Đảm bảo NotificationList được nhập đúng
 
 const NotificationsPage = () => {
-  const notifications = [
-    {
-      logo: 'path/to/logo1.png',
-      title: 'Nhân Viên IT Audit Thu Nhập Lên Tới 15 Triệu',
-      company: 'Công Ty TNHH Yamaha Motor Việt Nam',
-      salary: '11 - 15 triệu',
-      location: 'Hà Nội',
-      date: '21/11/2024'
-    },
-    {
-      logo: 'path/to/logo2.png',
-      title: 'Nhân Viên Kinh Doanh Xuất Nhập Khẩu',
-      company: 'Công Ty TNHH Sản Xuất Và Xuất Nhập Khẩu Tapp',
-      salary: '7 - 30 triệu',
-      location: 'Hà Nội',
-      date: '06/11/2024'
-    }
-  ];
+  const location = useLocation();
+  const favorites = location.state?.favorites || [];  // Nhận favorites từ location.state hoặc mặc định là []
 
   return (
     <Container fluid>
@@ -38,7 +23,11 @@ const NotificationsPage = () => {
           </Row>
           <Row>
             <Col>
-              <NotificationList notifications={notifications} />
+              {favorites.length > 0 ? (
+                <NotificationList notifications={favorites} />
+              ) : (
+                <p className="text-center">Chưa có việc làm yêu thích nào.</p>
+              )}
             </Col>
           </Row>
         </Col>

@@ -31,6 +31,8 @@ import PendingJobCardsPage from './components/job-management/pending-jobs/Pendin
 import JobOpportunities from './components/job/JobOpportunities';
 import HomeEmployer from './components/employer/HomeEmployer'; 
 import PostingJobs from "./components/employer/PostingJobs";
+import PostJob from "./components/employer/PostJob";
+import JobList from "./components/employer/JobList";
 //import EmployerHeader from './components/layout/EmployerHeader';
 
 // Ensure correct path
@@ -68,8 +70,10 @@ const App = () => {
           {/* Protected employer route */}
           <Route path="/employer/HomeEmployer" element={<HomeEmployer />} />
           <Route path="/employer/posting-jobs" element={<PostingJobs />} />
+          {/* <Route path="/employer/post-job/:id?" element={<PostJob />} /> */}
+          <Route path="/employer/post-job/:id?" element={<PostJob />} />
 
-
+          <Route path="/employer/job-list" element={<JobList />} />
 
           {/* Protected admin route */}
           <Route path="/admin/dashboard" element={<Dashboard />} />

@@ -13,7 +13,8 @@ const PersonalInfo = ({ profile, onSave, onEdit, onLockToggle, isEditing = false
     salary: '',
     experience: '',
     address: '',
-    image: null
+    image: null,
+    rank: 'chuyên viên-nhân viên' // Default value for rank
   });
 
   const [previewImage, setPreviewImage] = useState(null);
@@ -50,7 +51,8 @@ const PersonalInfo = ({ profile, onSave, onEdit, onLockToggle, isEditing = false
         salary: profile.salary || '',
         experience: profile.experience || '',
         address: profile.address || '',
-        image: null
+        image: null,
+        rank: profile.rank || 'chuyên viên-nhân viên' // Load rank if available
       });
       setPreviewImage(profile.image_url || '/default-avatar.png');
       setIsProfileSaved(true);
@@ -97,7 +99,7 @@ const PersonalInfo = ({ profile, onSave, onEdit, onLockToggle, isEditing = false
     // Start the loading state
     setIsLoading(true);
     const submitData = new FormData();
-    
+
     // Append form data
     Object.keys(formData).forEach(key => {
       if (key !== 'image' && formData[key] !== null && formData[key] !== undefined) {
@@ -114,12 +116,14 @@ const PersonalInfo = ({ profile, onSave, onEdit, onLockToggle, isEditing = false
       const response = !profile
         ? await ProfileService.createProfile(submitData) // Create new profile
         : await ProfileService.updateProfile(submitData); // Update existing profile
-      
+
       // After successful save/update, update the state and UI
       onSave(response.data);
       setIsProfileSaved(true);
       setErrorMessages([]);
-      
+      if (response.data && response.data.image_url) {
+        setPreviewImage(response.data.image_url);
+      }
       // Exit editing mode if in editing mode
       if (isEditing) {
         onEdit(false);
@@ -287,6 +291,25 @@ const PersonalInfo = ({ profile, onSave, onEdit, onLockToggle, isEditing = false
                   placeholder="Kinh nghiệm"
                   disabled={!isEditing}
                 />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Cấp bậc</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="rank"
+                  value={formData.rank}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                >
+                  <option value="quản lý cấp cao">Quản lý cấp cao</option>
+                  <option value="quản lý cấp trung">Quản lý cấp trung</option>
+                  <option value="quản lý nhóm_giám sát">Quản lý nhóm/Giám sát</option>
+                  <option value="chuyên gia">Chuyên gia</option>
+                  <option value="chuyên viên-nhân viên">Chuyên viên/Nhân viên</option>
+                  <option value="cộng tác viên">Cộng tác viên</option>
+                </Form.Control>
               </Form.Group>
             </Col>
             <Col md={12}>

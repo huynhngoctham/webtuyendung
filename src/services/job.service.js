@@ -1,14 +1,27 @@
-const API_BASE_URL = "YOUR_API_BASE_URL"; // Replace with your API base URL
+import apiClient from './apiClient'; // Import cấu hình axios từ file của bạn
 
-export const jobService = {
-  getFeaturedJobs: async () => {
-    const response = await fetch(`${API_BASE_URL}/jobs?featured=true`);
-    return response.json();
+const JobService = {
+  // Lấy tất cả các tin tuyển dụng còn hạn và employer không bị khóa
+  getActiveRecruitments() {
+    return apiClient
+      .get('/active-recruitments') // Gọi API showActiveRecruitments
+      .then((response) => response.data) // Trả về dữ liệu
+      .catch((error) => {
+        console.error('Lỗi khi lấy danh sách tin tuyển dụng:', error);
+        throw error; // Quăng lỗi để hàm gọi xử lý
+      });
   },
 
-  getLatestJobs: async () => {
-    const response = await fetch(`${API_BASE_URL}/jobs?sortBy=createdAt&order=desc`);
-    return response.json();
-},
-// other job service methods here... e.g. getJobById
+  // Lấy chi tiết tin tuyển dụng theo ID
+  getJobDetailsById(id) {
+    return apiClient
+      .get(`/get/news/${id}`) // Gọi API getNews với ID
+      .then((response) => response.data) // Trả về dữ liệu chi tiết tin tuyển dụng
+      .catch((error) => {
+        console.error(`Lỗi khi lấy thông tin tin tuyển dụng với ID ${id}:`, error);
+        throw error; // Quăng lỗi để hàm gọi xử lý
+      });
+  },
 };
+
+export default JobService;
