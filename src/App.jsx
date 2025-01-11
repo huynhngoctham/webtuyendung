@@ -1,4 +1,5 @@
 import React from 'react';
+// import { useParams } from 'react-router-dom';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext'; // Import AuthContext
 
@@ -16,7 +17,7 @@ import LanguageManagement from './components/admin/LanguageManagement';
 import ItManagement from './components/admin/ItManagement';
 import LockManagement from './components/admin/LockManagement';
 import PostingManagement from './components/admin/PostingManagement';
-
+import Change_Admin from './components/admin/Change_Admin';
 
 
 import JobSeekerLogin from './components/auth/JobSeekerLogin';
@@ -33,6 +34,8 @@ import HomeEmployer from './components/employer/HomeEmployer';
 import PostingJobs from "./components/employer/PostingJobs";
 import PostJob from "./components/employer/PostJob";
 import JobList from "./components/employer/JobList";
+import Change_Employer from "./components/employer/Change_Employer";
+import Applications from "./components/employer/Applications";
 //import EmployerHeader from './components/layout/EmployerHeader';
 
 // Ensure correct path
@@ -44,6 +47,13 @@ const Layout = ({ children }) => (
     <div className="content-wrapper">{children}</div>
   </div>
 );
+// const ApplicationsWrapper = () => {
+//   const { newsId } = useParams();  // Lấy newsId từ URL
+//   return <Applications newsId={newsId} />; // Truyền newsId vào prop của Applications
+// };
+
+
+
 
 const App = () => {
   return (
@@ -72,8 +82,14 @@ const App = () => {
           <Route path="/employer/posting-jobs" element={<PostingJobs />} />
           {/* <Route path="/employer/post-job/:id?" element={<PostJob />} /> */}
           <Route path="/employer/post-job/:id?" element={<PostJob />} />
-
+          <Route path="/employer/change-password" element={<Change_Employer />} />
           <Route path="/employer/job-list" element={<JobList />} />
+          {/* <Route path="/employer/applications/:newsId" element={<ApplicationsWrapper />} /> */}
+          <Route path="/employer/applications" element={<Applications />} />
+          
+
+          {/* <Route path="/employer/applications" element={<Applications />} /> */}
+
 
           {/* Protected admin route */}
           <Route path="/admin/dashboard" element={<Dashboard />} />
@@ -83,6 +99,7 @@ const App = () => {
           <Route path="/admin/it-management" element={<ItManagement />} />
           <Route path="/admin/lock-management" element={<LockManagement />} />
           <Route path="/admin/posting-management" element={<PostingManagement />} />
+          <Route path="/admin/change-admin" element={<Change_Admin />} />
         </Routes>
       </Router>
     </AuthProvider>

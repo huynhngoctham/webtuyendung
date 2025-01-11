@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -7,9 +6,6 @@ import {
   Row,
   Col,
   Button,
-  Badge,
-  Tab,
-  Nav,
   Spinner,
   Alert,
   OverlayTrigger,
@@ -20,24 +16,22 @@ import {
 } from "react-bootstrap";
 import {
   Bookmark,
-  Share2,
   Flag,
   MapPin,
   Calendar,
   Users,
   Briefcase,
-  GraduationCap,
   Clock,
   Building,
   Mail,
   Phone,
-  DollarSign,
   Award,
   BookOpen,
   CheckCircle,
-  Upload
 } from 'lucide-react';
+
 import JobService from "../services/job.service";
+import SendService from "../services/send.service";
 
 const JobDetail = () => {
   const { jobId } = useParams();
@@ -47,22 +41,29 @@ const JobDetail = () => {
   const [saved, setSaved] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [applicationForm, setApplicationForm] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    experience: '',
-    currentJob: '',
-    expectedSalary: '',
-    message: '',
-    resume: null
+    name: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        const data = await JobService.getJobDetailsById(jobId);
-        setJobDetails(data);
+        const response = await JobService.getMatchingJobs();
+        // Convert object to array if necessary
+        const jobsArray = response && typeof response === 'object' 
+          ? Object.values(response) 
+          : Array.isArray(response) 
+            ? response 
+            : [];
+            
+        const job = jobsArray.find(j => j.id === parseInt(jobId));
+        if (job) {
+          setJobDetails(job);
+        } else {
+          setError("Không tìm thấy công việc");
+        }
       } catch (err) {
         setError("Không thể tải thông tin công việc");
         console.error(err);
@@ -77,31 +78,21 @@ const JobDetail = () => {
   const handleApplicationSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError(null);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Handle form submission here
-      console.log('Form submitted:', applicationForm);
-      
-      // Reset form and close modal
-      setApplicationForm({
-        fullName: '',
-        email: '',
-        phone: '',
-        experience: '',
-        currentJob: '',
-        expectedSalary: '',
-        message: '',
-        resume: null
-      });
+      await SendService.sendProfile(applicationForm, jobId);
+      setSubmitSuccess(true);
       setShowApplicationModal(false);
+      setApplicationForm({ name: '' });
       
-      // Show success message
       alert('Đơn ứng tuyển của bạn đã được gửi thành công!');
     } catch (error) {
-      alert('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau.');
+      if (error.response?.status === 401) {
+        setSubmitError('Vui lòng đăng nhập và tạo hồ sơ trước khi ứng tuyển');
+      } else {
+        setSubmitError('Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -113,20 +104,6 @@ const JobDetail = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('File không được vượt quá 5MB');
-        return;
-      }
-      setApplicationForm(prev => ({
-        ...prev,
-        resume: file
-      }));
-    }
   };
 
   const formatSalary = (salary) => {
@@ -179,32 +156,36 @@ const JobDetail = () => {
     );
   }
 
-  const { employer, industry } = jobDetails;
+  const { employer } = jobDetails;
 
   return (
     <div className="bg-light min-vh-100 py-4">
       <Container>
-        {/* Header Card */}
         <Card className="border-0 shadow-sm mb-4 overflow-hidden">
           <Card.Body className="p-4">
             <Row className="align-items-center g-4">
               <Col lg={2} md={3} className="text-center">
                 <img
-                  src={employer.image || "/default-company-logo.png"}
-                  alt={employer.company_name}
+                  src={jobDetails.image_url || `${process.env.REACT_APP_BACKEND_URL}/storage/${employer.image}`}
+                  alt={employer.company_name || "Company Logo"}
                   className="rounded-3 img-thumbnail shadow-sm"
                   style={{
                     width: "140px",
                     height: "140px",
-                    objectFit: "cover"
+                    objectFit: "cover",
                   }}
                 />
               </Col>
               
               <Col lg={7} md={9}>
-                <span className="d-inline-block px-3 py-1 bg-primary-subtle text-primary rounded-pill mb-2">
-                  {jobDetails.workingmodel}
-                </span>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <span className="px-3 py-1 bg-primary-subtle text-primary rounded-pill">
+                    {jobDetails.workingmodel}
+                  </span>
+                  <span className="badge bg-info">
+                    Phù hợp {jobDetails.match_count}/9
+                  </span>
+                </div>
                 <h1 className="display-6 mb-2">{jobDetails.title}</h1>
                 <h2 className="h5 text-muted mb-3">{employer.company_name}</h2>
                 
@@ -313,10 +294,11 @@ const JobDetail = () => {
                     </Col>
                   </Row>
                 </div>
+
                 <div className="mb-5">
                   <h4 className="mb-4">Mô tả công việc</h4>
                   <div className="bg-light rounded-3 p-4">
-                    {jobDetails.describe.split('\n').map((line, index) => (
+                    {jobDetails.describe?.split('\n').map((line, index) => (
                       <p key={index}>{line}</p>
                     ))}
                   </div>
@@ -325,7 +307,7 @@ const JobDetail = () => {
                 <div className="mb-5">
                   <h4 className="mb-4">Yêu cầu ứng viên</h4>
                   <div className="bg-light rounded-3 p-4">
-                    {jobDetails.requirements.split('\n').map((line, index) => (
+                    {jobDetails.requirements?.split('\n').map((line, index) => (
                       <p key={index}>{line}</p>
                     ))}
                   </div>
@@ -334,16 +316,15 @@ const JobDetail = () => {
                 <div className="mb-5">
                   <h4 className="mb-4">Quyền lợi</h4>
                   <div className="bg-light rounded-3 p-4">
-                    {jobDetails.benefit.split('\n').map((line, index) => (
+                    {jobDetails.benefit?.split('\n').map((line, index) => (
                       <p key={index}>{line}</p>
                     ))}
                   </div>
                 </div>
 
-
                 <div>
                   <h4 className="mb-4">Địa điểm làm việc</h4>
-                  {jobDetails.workplacenews.map((workplace, index) => (
+                  {jobDetails.workplacenews?.map((workplace, index) => (
                     <div 
                       key={index}
                       className="d-flex align-items-center mb-2"
@@ -403,27 +384,37 @@ const JobDetail = () => {
           </Col>
         </Row>
 
-        {/* Application Modal */}
         <Modal
           show={showApplicationModal}
-          onHide={() => setShowApplicationModal(false)}
-          size="lg"
+          onHide={() => {
+            setShowApplicationModal(false);
+            setSubmitError(null);
+          }}
           centered
         >
           <Modal.Header closeButton>
             <Modal.Title>Ứng tuyển vị trí {jobDetails.title}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {submitError && (
+              <Alert variant="danger" className="mb-3">
+                {submitError}
+              </Alert>
+            )}
+            {submitSuccess && (
+              <Alert variant="success" className="mb-3">
+                Đơn ứng tuyển của bạn đã được gửi thành công!
+              </Alert>
+            )}
             <Form onSubmit={handleApplicationSubmit}>
               <Row className="g-3">
-{/* Continuing from the Form inside Modal.Body */}
-                <Col md={6}>
+                <Col xs={12}>
                   <Form.Group>
                     <Form.Label>Họ và tên <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                       type="text"
-                      name="fullName"
-                      value={applicationForm.fullName}
+                      name="name"
+                      value={applicationForm.name}
                       onChange={handleInputChange}
                       required
                       placeholder="Nhập họ và tên của bạn"
@@ -431,115 +422,24 @@ const JobDetail = () => {
                   </Form.Group>
                 </Col>
 
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Email <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                      type="email"
-                      name="email"
-                      value={applicationForm.email}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Nhập địa chỉ email của bạn"
-                    />
-                  </Form.Group>
-                </Col>
-
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Số điện thoại <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                      type="tel"
-                      name="phone"
-                      value={applicationForm.phone}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Nhập số điện thoại của bạn"
-                    />
-                  </Form.Group>
-                </Col>
-
-                
-
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Công việc hiện tại</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="currentJob"
-                      value={applicationForm.currentJob}
-                      onChange={handleInputChange}
-                      placeholder="Nhập công việc hiện tại của bạn"
-                    />
-                  </Form.Group>
-                </Col>
-
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Mức lương mong muốn <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="expectedSalary"
-                      value={applicationForm.expectedSalary}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="VD: 15,000,000 VNĐ"
-                    />
-                  </Form.Group>
-                </Col>
-
                 <Col xs={12}>
-                  <Form.Group>
-                    <Form.Label>Thư giới thiệu</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      name="message"
-                      value={applicationForm.message}
-                      onChange={handleInputChange}
-                      rows={4}
-                      placeholder="Giới thiệu ngắn gọn về bản thân và mong muốn của bạn với vị trí này"
-                    />
-                  </Form.Group>
+                  <Alert variant="info">
+                    <p className="mb-0">
+                      <strong>Lưu ý:</strong> Hệ thống sẽ sử dụng thông tin từ hồ sơ của bạn để ứng tuyển. 
+                      Vui lòng đảm bảo thông tin hồ sơ của bạn đã được cập nhật đầy đủ trước khi ứng tuyển.
+                    </p>
+                  </Alert>
                 </Col>
-
-                {/* <Col xs={12}>
-                  <Form.Group>
-                    <Form.Label>
-                      CV của bạn <span className="text-danger">*</span>
-                      <span className="text-muted ms-2">(PDF, DOCX, tối đa 5MB)</span>
-                    </Form.Label>
-                    <div className="d-flex align-items-center gap-3">
-                      <Button
-                        variant="outline-primary"
-                        className="d-flex align-items-center gap-2"
-                        onClick={() => document.getElementById('resume-upload').click()}
-                      >
-                        <Upload size={20} />
-                        Tải CV lên
-                      </Button>
-                      {applicationForm.resume && (
-                        <span className="text-success">
-                          Đã chọn: {applicationForm.resume.name}
-                        </span>
-                      )}
-                    </div>
-                    <Form.Control
-                      type="file"
-                      id="resume-upload"
-                      className="d-none"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileChange}
-                      required
-                    />
-                  </Form.Group>
-                </Col> */}
               </Row>
             </Form>
           </Modal.Body>
           <Modal.Footer>
             <Button
               variant="secondary"
-              onClick={() => setShowApplicationModal(false)}
+              onClick={() => {
+                setShowApplicationModal(false);
+                setSubmitError(null);
+              }}
             >
               Hủy
             </Button>

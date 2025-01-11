@@ -86,9 +86,8 @@ const RecruitmentService = {
     });
   },
   
-  
   // API lấy tin tuyển dụng theo ID
-  // React - Fetch dữ liệu tuyển dụng
+  
   fetchRecruitmentList() {
     return apiClient
       .get('/employer/list') // Endpoint lấy danh sách tuyển dụng
@@ -109,7 +108,16 @@ const RecruitmentService = {
       });
   },
   
+  changeLock(data) {
+    return apiClient.put(`/employer/changeActive/${data.newsid}`, data)  // Gọi đúng API
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Error changing lock status:', error.response?.data || error);
+        throw error;
+      });
+  },
   
+
 
 }  
 

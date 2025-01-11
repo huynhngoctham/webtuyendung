@@ -42,7 +42,7 @@ const JobOpportunities = () => {
           setSearchParams(searchParams || {});
           setFilteredJobs(jobs || []);
         } else {
-          const activeJobs = await JobService.getActiveRecruitments();
+          const activeJobs = await JobService.getMatchingJobs();
           setFilteredJobs(activeJobs);
         }
       } catch (error) {
@@ -176,13 +176,12 @@ const JobOpportunities = () => {
     };
   
     const salary = formatSalary(job.salary);
-    const location =
-      job.workplacenews?.length > 0
-        ? job.workplacenews[0]?.homeaddress || "Không xác định"
-        : "Không xác định";
+    
+    
   
-    return `${companyName} | ${salary} | ${location}`;
+    return `${companyName} | ${salary}  `;  
   };
+  
 
   const handleFilterChange = (field, value) => {
     setSearchParams(prev => ({
@@ -378,52 +377,80 @@ const JobOpportunities = () => {
           </Form>
         </div>
 
-        {/* Job Listings Section */}
-        <div className="job-list mt-4">
-          {filteredJobs.length > 0 ? (
-            filteredJobs.map((job) => (
-<Card key={job.id} className="mb-3 shadow-sm" onClick={() => handleJobClick(job.id)}>
-                <Card.Body>
-                  <Row>
-                    <Col md={2} className="d-flex align-items-center">
-                      {job.urgent && <Badge bg="danger" className="p-2">GẤP</Badge>}
-                    </Col>
-                    <Col md={8}>
-                      <h5 className="mb-1">{job.title}</h5>
-                      <p className="mb-1">{renderJobDetails(job)}</p>
-                    </Col>
-                    <Card.Text className="text-success fw-bold">
-                      {job.salary} VNĐ
-                    </Card.Text>
-                    <div className="d-flex justify-content-between mt-2">
-                      <small className="text-muted">
-                        <i className="bi bi-briefcase me-1"></i>
-                        {job.workingmodel}
-                      </small>
-                      <small className="text-muted">
-                        <i className="bi bi-calendar-check me-1"></i>
-                        {job.deadline}
-                      </small>
-                    </div>
-                  </Row>
-                  {/* Heart Icon Button for Favorites */}
-                  <Button 
-                    variant="link" 
-                    className="position-absolute top-0 end-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(job.id);
-                    }}
-                  >
-                    <FaHeart color={favorites.includes(job.id) ? 'red' : 'lightgray'} />
-                  </Button>
-                </Card.Body>
-              </Card>
-            ))
-          ) : (
-            <p className="text-center">Không tìm thấy công việc phù hợp.</p>
-          )}
-        </div>
+       {/* Job Listings Section */}
+<div className="job-list mt-4">
+  {filteredJobs.length > 0 ? (
+    filteredJobs.map((job) => {
+      // Thêm domain gốc nếu URL là đường dẫn tương đối
+      const BASE_URL = 'http://127.0.0.1:8000/storage/';
+      const logoUrl = job.employer?.image
+        ? job.employer.image.startsWith('http')
+          ? job.employer.image
+          : `${BASE_URL}${job.employer.image}`
+        : 'https://www.vinamilk.com.vn/static/tpl/dist/assets/images/global/logo.webp?v=070723';
+
+      return (
+        <Card key={job.id} className="mb-3 shadow-sm" onClick={() => handleJobClick(job.id)}>
+          <Card.Body>
+            <Row>
+              <Col md={2} className="d-flex align-items-center">
+                {console.log(logoUrl)} {/* Log kiểm tra URL */}
+                <img
+                  src={logoUrl}
+                  alt="Logo công ty"
+                  className="img-fluid"
+                  style={{
+                    width: '60px', // Thay đổi kích thước logo
+                    height: '60px', // Đảm bảo logo là hình vuông
+                    objectFit: 'contain', // Đảm bảo không cắt ảnh, giữ tỷ lệ
+                    borderRadius: '5px', // Tạo góc bo tròn nhẹ
+                  }}
+                  onError={(e) => {
+                    // Nếu URL ảnh bị lỗi, thay thế bằng logo mặc định
+                    e.target.src =
+                      'https://www.vinamilk.com.vn/static/tpl/dist/assets/images/global/logo.webp?v=070723';
+                  }}
+                />
+                {job.urgent && <Badge bg="danger" className="p-2">GẤP</Badge>}
+              </Col>
+              <Col md={8}>
+                <h5 className="mb-1">{job.title}</h5>
+                <p className="mb-1">{renderJobDetails(job)}</p>
+              </Col>
+              <Card.Text className="text-success fw-bold">
+                {job.salary} VNĐ
+              </Card.Text>
+              <div className="d-flex justify-content-between mt-2">
+                <small className="text-muted">
+                  <i className="bi bi-briefcase me-1"></i>
+                  {job.workingmodel}
+                </small>
+                <small className="text-muted">
+                  <i className="bi bi-calendar-check me-1"></i>
+                  {job.deadline}
+                </small>
+              </div>
+            </Row>
+            {/* Heart Icon Button for Favorites */}
+            <Button
+              variant="link"
+              className="position-absolute top-0 end-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(job.id);
+              }}
+            >
+              <FaHeart color={favorites.includes(job.id) ? 'red' : 'lightgray'} />
+            </Button>
+          </Card.Body>
+        </Card>
+      );
+    })
+  ) : (
+    <p className="text-center">Không tìm thấy công việc phù hợp.</p>
+  )}
+</div>
+
       </Container>
     </div>
   );

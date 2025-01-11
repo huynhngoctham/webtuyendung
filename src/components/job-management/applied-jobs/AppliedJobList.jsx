@@ -1,19 +1,35 @@
-import React from 'react';
-import { Table } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Table, Spinner, Alert } from 'react-bootstrap';
+import SendService from '../../../services/send.service'; // API service
 import AppliedJobCard from './AppliedJobCard';
 
-const appliedJobs = [
-  {
-    id: 1,
-    jobTitle: "Kỹ Sư Công Nghệ Thông Tin (Kỹ Sư IT) - Chuyên Viên Quản Lý Dự Án",
-    company: "Công Ty Cổ Phần Cơ Khí Xây Dựng Biển Việt",
-    applicationStatus: "Hồ sơ nộp nhanh",
-    appliedDate: "04/11/2024",
-    viewStatus: "Hồ sơ đã được xem"
-  }
-];
-
 const AppliedJobList = () => {
+  const [appliedJobs, setAppliedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    SendService.getSendNews()
+      .then((data) => {
+        setAppliedJobs(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <Spinner animation="border" variant="primary" className="d-block mx-auto mt-5" />;
+  }
+
+  if (error) {
+    return <Alert variant="danger" className="text-center mt-5">
+      Không thể tải danh sách công việc: {error.message}
+    </Alert>;
+  }
+
   return (
     <Table hover className="align-middle">
       <thead>
@@ -26,8 +42,8 @@ const AppliedJobList = () => {
         </tr>
       </thead>
       <tbody>
-        {appliedJobs.map(job => (
-          <AppliedJobCard key={job.id} job={job} />
+        {appliedJobs.map((job, index) => (
+          <AppliedJobCard key={index} job={job} />
         ))}
       </tbody>
     </Table>

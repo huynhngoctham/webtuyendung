@@ -10,10 +10,15 @@ const BestJobs = () => {
   const jobsPerPage = 6;
 
   useEffect(() => {
-    JobService.getActiveRecruitments()
+    JobService.getMatchingJobs()
       .then((data) => {
-        console.log('Jobs data:', data);  // Log data to check structure
-        setJobs(data);
+        // Convert object to array if necessary
+        const jobsArray = data && typeof data === 'object' 
+          ? Object.values(data) 
+          : Array.isArray(data) 
+            ? data 
+            : [];
+        setJobs(jobsArray);
         setLoading(false);
       })
       .catch((error) => {
@@ -25,17 +30,16 @@ const BestJobs = () => {
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
   const currentJobs = jobs.slice(indexOfFirstJob, indexOfLastJob);
+  const totalPages = Math.ceil(jobs.length / jobsPerPage);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  const totalPages = Math.ceil(jobs.length / jobsPerPage);
-
   return (
     <div className="my-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="text-primary">Việc làm Đang tuyển</h3>
+        <h3 className="text-primary">Việc làm phù hợp với bạn</h3>
         <Link to="/job-opportunities">
           <Button variant="outline-primary">Xem tất cả</Button>
         </Link>
@@ -54,7 +58,7 @@ const BestJobs = () => {
                   <Card.Body className="text-center">
                     <div className="mb-3">
                       <img
-                        src={job.employer?.image || 'https://via.placeholder.com/50'}
+                        src={job.image_url || 'https://www.vinamilk.com.vn/static/tpl/dist/assets/images/global/logo.webp?v=070723'}
                         alt={`${job.employer?.company_name} logo`}
                         className="rounded-circle border border-light"
                         style={{ width: '60px', height: '60px' }}
@@ -62,8 +66,6 @@ const BestJobs = () => {
                     </div>
                     <Card.Title className="font-weight-bold">{job.title}</Card.Title>
                     <Card.Text className="text-muted">
-                      {/* Log job to inspect employer data */}
-                      {console.log('Job:', job)}
                       {job.employer && job.employer.company_name ? job.employer.company_name : 'Chưa có tên công ty'}
                     </Card.Text>
                     <Card.Text className="text-success fw-bold">
@@ -79,10 +81,15 @@ const BestJobs = () => {
                         {job.deadline}
                       </small>
                     </div>
+                    <div className="mt-2">
+                      <span className="badge bg-info text-white">
+                        Phù hợp {job.match_count}/9
+                      </span>
+                    </div>
                   </Card.Body>
                   <Card.Footer className="text-center">
                     <Link to={`/job/${job.id}`}>
-                      <Button variant="primary" className="w-100">Apply Now</Button>
+                      <Button variant="primary" className="w-100">Ứng tuyển ngay</Button>
                     </Link>
                   </Card.Footer>
                 </Card>

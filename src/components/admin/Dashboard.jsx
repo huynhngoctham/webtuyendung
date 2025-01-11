@@ -74,24 +74,6 @@ const Dashboard = () => {
           </Col>
 
           {/* Card for Billing Management */}
-          {/* <Col md={3} className="mb-4">
-            <Card className="h-100 shadow-lg border-light">
-              <Card.Body>
-                <Card.Title className="text-success text-center">Quản lý dịch vụ và hóa đơn</Card.Title>
-                <Button
-                  variant="outline-success"
-                  className="w-100"
-                  onClick={() => navigate('/admin/billing-management')}
-                >
-                  Xem danh sách
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col> */}
-        </Row>
-
-        <Row className="my-4">
-          {/* Card for Field Management */}
           <Col md={3} className="mb-4">
             <Card className="h-100 shadow-lg border-light">
               <Card.Body>
@@ -106,6 +88,11 @@ const Dashboard = () => {
               </Card.Body>
             </Card>
           </Col>
+        
+
+        
+          {/* Card for Field Management */}
+          
 
           {/* Card for Feedback Management */}
           <Col md={3} className="mb-4">
@@ -175,6 +162,20 @@ const Dashboard = () => {
                   variant="outline-success"
                   className="w-100"
                   onClick={() => navigate('/admin/lock-management')}
+                >
+                  Xem danh sách
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={3} className="mb-4">
+            <Card className="h-100 shadow-lg border-light">
+              <Card.Body>
+                <Card.Title className="text-success text-center">Cài đặt và đổi mật khẩu</Card.Title>
+                <Button
+                  variant="outline-success"
+                  className="w-100"
+                  onClick={() => navigate('/admin/change-admin')}
                 >
                   Xem danh sách
                 </Button>

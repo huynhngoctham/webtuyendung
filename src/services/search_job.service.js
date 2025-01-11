@@ -25,7 +25,10 @@ searchJobs(title) {
   filterJobs(filters) {
     return apiClient
       .get('/filter-jobs', { params: filters }) // Gửi yêu cầu GET với tham số lọc
-      .then((response) => response.data) // Trả về danh sách công việc đã lọc từ API
+      .then((response) => {
+        console.log('Danh sách công việc đã lọc:', response.data); // Log kết quả để kiểm tra
+        return response.data; // Trả về danh sách công việc đã lọc từ API
+      })
       .catch((error) => {
         console.error('Lỗi khi lọc công việc:', error);
         throw error; // Quăng lỗi để xử lý ở phía gọi hàm

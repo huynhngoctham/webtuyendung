@@ -111,9 +111,25 @@ const PostJob = () => {
     };
 
     const handleIndustryChange = (e) => {
+        const selectedIndustryId = e.target.value;
+        if (selectedIndustryId) {
+            setFormData(prevData => ({
+                ...prevData,
+                industry: [
+                    ...prevData.industry,
+                    { industry_id: selectedIndustryId }
+                ]
+            }));
+        }
+    };
+
+    // Handle removing an industry
+    const handleRemoveIndustry = (industryIdToRemove) => {
         setFormData(prevData => ({
             ...prevData,
-            industry: [{ industry_id: e.target.value }]
+            industry: prevData.industry.filter(ind => 
+                ind.industry_id !== industryIdToRemove
+            )
         }));
     };
 
@@ -360,7 +376,7 @@ const PostJob = () => {
                 />
                 <Form.Control.Feedback type="invalid">{errors.benefit}</Form.Control.Feedback>
             </Form.Group>
-
+            <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
 
                 {/* Job Requirements */}
                 <h4 className="mt-4">Yêu cầu công việc</h4>
@@ -411,7 +427,7 @@ const PostJob = () => {
                         </Form.Group>
                     </Col>
                 </Row>
-
+                <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
                 <Form.Group className="mb-3">
                     <Form.Label>Trình độ học vấn <span className="text-danger">*</span></Form.Label>
                     <Form.Control
@@ -431,7 +447,26 @@ const PostJob = () => {
                     </Form.Control>
                     <Form.Control.Feedback type="invalid">{errors.qualifications}</Form.Control.Feedback>
                 </Form.Group>
-
+                <Form.Group className="mb-3">
+                    <Form.Label>Hình thức làm việc <span className="text-danger">*</span></Form.Label>
+                    <Form.Control
+                        as="select"
+                        name="workingmodel"
+                        value={formData.workingmodel}
+                        onChange={handleChange}
+                        isInvalid={!!errors.workingmodel}
+                    >
+                        <option value="">Loại Công Việc</option>
+                        <option value="Toàn thời gian">Toàn thời gian</option>
+                        <option value="Bán thời gian">Bán thời gian</option>
+                        <option value="Freelance">Freelance</option>
+                        <option value="Làm việc từ xa">Làm việc từ xa</option>
+                        <option value="Thời vụ">Thời vụ</option>
+                        <option value="Thực Tập">Thực Tập</option>
+                    </Form.Control>
+                    <Form.Control.Feedback type="invalid">{errors.workingmodel}</Form.Control.Feedback>
+                </Form.Group>
+                <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
                 <Form.Group className="mb-3">
                     <Form.Label>Kỹ năng yêu cầu <span className="text-danger">*</span></Form.Label>
                     <Form.Control
@@ -460,26 +495,8 @@ const PostJob = () => {
                     <Form.Control.Feedback type="invalid">{errors.requirements}</Form.Control.Feedback>
                 </Form.Group>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Hình thức làm việc <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                        as="select"
-                        name="workingmodel"
-                        value={formData.workingmodel}
-                        onChange={handleChange}
-                        isInvalid={!!errors.workingmodel}
-                    >
-                        <option value="">Loại Công Việc</option>
-                        <option value="Toàn thời gian">Toàn thời gian</option>
-                        <option value="Bán thời gian">Bán thời gian</option>
-                        <option value="Freelance">Freelance</option>
-                        <option value="Làm việc từ xa">Làm việc từ xa</option>
-                        <option value="Thời vụ">Thời vụ</option>
-                        <option value="Thực Tập">Thực Tập</option>
-                    </Form.Control>
-                    <Form.Control.Feedback type="invalid">{errors.workingmodel}</Form.Control.Feedback>
-                </Form.Group>
-
+                
+                <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
                 <Form.Group controlId="deadline" className="mb-3">
                     <Form.Label>Ngày hết hạn</Form.Label>
                     <DatePicker
@@ -495,23 +512,55 @@ const PostJob = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                    <Form.Label>Ngành nghề <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                        as="select"
-                        value={formData.industry[0].industry_id}
-                        onChange={handleIndustryChange}
-                        isInvalid={!!errors.industry}
-                    >
-                        <option value="">Chọn ngành nghề</option>
-                        {industries.map(industry => (
-                            <option key={industry.id} value={industry.id}>
-                                {industry.industry_name}
-                            </option>
-                        ))}
-                    </Form.Control>
-                    <Form.Control.Feedback type="invalid">{errors.industry}</Form.Control.Feedback>
-                </Form.Group>
+                <Form.Label>Ngành nghề <span className="text-danger">*</span></Form.Label>
+                <Form.Control
+                    as="select"
+                    onChange={handleIndustryChange}
+                    isInvalid={!!errors.industry}
+                >
+                    <option value="">Chọn ngành nghề</option>
+                    {industries.map(industry => (
+                        <option 
+                            key={industry.id} 
+                            value={industry.id}
+                            disabled={formData.industry.some(
+                                ind => ind.industry_id === industry.id.toString()
+                            )}
+                        >
+                            {industry.industry_name}
+                        </option>
+                    ))}
+                </Form.Control>
+                <Form.Control.Feedback type="invalid">
+                    {errors.industry}
+                </Form.Control.Feedback>
 
+                {/* Display selected industries */}
+                <div className="mt-2">
+                    {formData.industry.map((ind, index) => {
+                        const selectedIndustry = industries.find(
+                            i => i.id.toString() === ind.industry_id
+                        );
+                        return selectedIndustry ? (
+                            <span
+                                key={index}
+                                className="badge bg-primary me-2 mb-2 p-2"
+                                style={{ fontSize: '0.9em' }}
+                            >
+                                {selectedIndustry.industry_name}
+                                <button
+                                    type="button"
+                                    className="btn-close btn-close-white ms-2"
+                                    style={{ fontSize: '0.7em' }}
+                                    onClick={() => handleRemoveIndustry(ind.industry_id)}
+                                    aria-label="Remove industry"
+                                />
+                            </span>
+                        ) : null;
+                    })}
+                </div>
+            </Form.Group>
+            <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
                 {/* Workplace Section */}
                 <div className="workplace-section mt-4">
                     <div className="d-flex justify-content-between align-items-center mb-3">
@@ -617,7 +666,7 @@ const PostJob = () => {
                         </div>
                     ))}
                 </div>
-
+                <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
                 {/* Optional Information */}
                 <div className="optional-section mt-4">
                     <h4>Thông tin thêm </h4>
