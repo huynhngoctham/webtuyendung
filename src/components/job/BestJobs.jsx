@@ -9,10 +9,18 @@ const BestJobs = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const jobsPerPage = 6;
 
+  const formatSalary = (salary) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(salary);
+  };
+
   useEffect(() => {
     JobService.getMatchingJobs()
       .then((data) => {
-        // Convert object to array if necessary
         const jobsArray = data && typeof data === 'object' 
           ? Object.values(data) 
           : Array.isArray(data) 
@@ -69,7 +77,7 @@ const BestJobs = () => {
                       {job.employer && job.employer.company_name ? job.employer.company_name : 'Chưa có tên công ty'}
                     </Card.Text>
                     <Card.Text className="text-success fw-bold">
-                      {job.salary} VNĐ
+                      {formatSalary(job.salary)}
                     </Card.Text>
                     <div className="d-flex justify-content-between mt-2">
                       <small className="text-muted">

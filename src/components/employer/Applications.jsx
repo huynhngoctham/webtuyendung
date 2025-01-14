@@ -58,13 +58,14 @@ const Applications = () => {
     if (!recruitmentId) return;
 
     try {
-      const response = await apiClient.get(`/employer/getProfile/${recruitmentId}`);
-      if (!response.data.error) {
-        setApplications(response.data.send || []);
+      // Using the new sorted profiles API
+      const response = await apiClient.get(`/employer/listProfile/${recruitmentId}`);
+      if (Array.isArray(response.data)) {
+        setApplications(response.data);
         setError(null);
       } else {
         setApplications([]);
-        setError(response.data.message);
+        setError('Không có dữ liệu ứng viên.');
       }
     } catch (error) {
       setError('Không thể tải danh sách ứng viên. Vui lòng thử lại sau.');
@@ -164,44 +165,6 @@ const Applications = () => {
       <EmployerHeader />
       <div className="container-fluid">
         <Row>
-          <Col md={3} className="bg-light border-end" style={{ minHeight: "100vh", paddingTop: "20px" }}>
-            <div className="px-3">
-              <h5 className="mb-4">QUẢN LÝ</h5>
-              <ListGroup variant="flush">
-                <ListGroup.Item>
-                  <Link to="/employer/post-job" className="text-decoration-none text-dark">
-                    <FaBriefcase className="me-2" />
-                    Quản lý tin tuyển dụng
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Link to="/employer/job-list" className="text-decoration-none text-dark">
-                    <FaFileAlt className="me-2" />
-                    Danh sách công việc
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item active>
-                  <Link to="/employer/applications" className="text-decoration-none text-white">
-                    <FaUsers className="me-2" />
-                    Quản lý ứng viên
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Link to="/employer/posting-jobs" className="text-decoration-none text-dark">
-                    <FaUsers className="me-2" />
-                    Gói dịch vụ
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Link to="/employer/change-password" className="text-decoration-none text-dark">
-                    <FaLock className="me-2" />
-                    Đổi mật khẩu
-                  </Link>
-                </ListGroup.Item>
-              </ListGroup>
-            </div>
-          </Col>
-
           <Col md={9} className="p-4">
             {loading ? (
               <div className="text-center">
@@ -248,6 +211,7 @@ const Applications = () => {
                               <tr>
                                 <th>Họ và tên</th>
                                 <th>Ngày ứng tuyển</th>
+                                <th>Điểm khớp</th>
                                 <th>Trạng thái</th>
                                 <th>Thao tác</th>
                               </tr>
@@ -257,6 +221,7 @@ const Applications = () => {
                                 <tr key={app.id}>
                                   <td>{app.name}</td>
                                   <td>{new Date(app.senddate).toLocaleDateString('vi-VN')}</td>
+                                  <td>{app.match_count}</td>
                                   <td>{app.status}</td>
                                   <td>
                                     <Button 

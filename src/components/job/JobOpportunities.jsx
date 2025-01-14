@@ -418,8 +418,18 @@ const JobOpportunities = () => {
                 <p className="mb-1">{renderJobDetails(job)}</p>
               </Col>
               <Card.Text className="text-success fw-bold">
-                {job.salary} VNĐ
-              </Card.Text>
+  {job.salary
+    ? new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })
+        .format(job.salary)
+        .replace(/\s₫/, " VND") // Định dạng lại từ '₫' thành 'VND'
+    : "Thỏa thuận"}
+</Card.Text>
+
               <div className="d-flex justify-content-between mt-2">
                 <small className="text-muted">
                   <i className="bi bi-briefcase me-1"></i>

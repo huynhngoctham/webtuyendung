@@ -2,28 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Dropdown, DropdownButton, Row, Col, Table } from 'react-bootstrap';
 import { getAllIndustries } from '../../services/industry.service';
 import IndustryService from '../../services/industryfield.service';
-import WorkplaceService from '../../services/workplace.service';  // Đảm bảo import workplace.service.js
-import WorkplaceServicefile from '../../services/workplacefile.service';  // Đảm bảo import workplacefile.service.js
+import WorkplaceService from '../../services/workplace.service';
+import WorkplaceServicefile from '../../services/workplacefile.service';
 
 const IndustryField = () => {
-  const [workplaces, setWorkplaces] = useState([]);  // Dữ liệu workplace từ dropdown
-  const [industries, setIndustries] = useState([]);  // Dữ liệu ngành nghề
-  const [selectedIndustry, setSelectedIndustry] = useState(null);  // Ngành nghề đã chọn
-  const [selectedWorkplace, setSelectedWorkplace] = useState(null);  // Địa điểm làm việc đã chọn
-  const [userIndustries, setUserIndustries] = useState([]);  // Ngành nghề của người dùng
-  const [userWorkplaces, setUserWorkplaces] = useState([]);  // Địa điểm làm việc của người dùng
+  const [workplaces, setWorkplaces] = useState([]);
+  const [industries, setIndustries] = useState([]);
+  const [selectedIndustry, setSelectedIndustry] = useState(null);
+  const [selectedWorkplace, setSelectedWorkplace] = useState(null);
+  const [userIndustries, setUserIndustries] = useState([]);
+  const [userWorkplaces, setUserWorkplaces] = useState([]);
+  const [selectedExperience, setSelectedExperience] = useState("");
 
-  // Lấy dữ liệu ban đầu
+  const experienceOptions = [
+    { value: "", label: "Kinh Nghiệm" },
+    { value: "chua", label: "Chưa có kinh nghiệm" },
+    { value: "duoi_1", label: "Dưới 1 năm" },
+    { value: "1", label: "1 năm" },
+    { value: "2", label: "2 năm" },
+    { value: "3", label: "3 năm" },
+    { value: "4", label: "4 năm" },
+    { value: "5", label: "5 năm" },
+    { value: "5+", label: "5 năm trở lên" }
+  ];
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const industriesData = await getAllIndustries();  // Lấy dữ liệu ngành nghề
-        const workplacesData = await WorkplaceService.getAllWorkplace();  // Lấy dữ liệu workplace cho dropdown từ workplace.service.js
+        const industriesData = await getAllIndustries();
+        const workplacesData = await WorkplaceService.getAllWorkplace();
         setIndustries(industriesData);
         setWorkplaces(workplacesData);
 
-        const userIndustriesData = await IndustryService.getAllIndustries();  // Ngành nghề của người dùng
-        const userWorkplacesData = await WorkplaceServicefile.getAllWorkplace();  // Địa điểm làm việc của người dùng từ workplacefile.service.js
+        const userIndustriesData = await IndustryService.getAllIndustries();
+        const userWorkplacesData = await WorkplaceServicefile.getAllWorkplace();
         setUserIndustries(userIndustriesData);
         setUserWorkplaces(userWorkplacesData);
       } catch (error) {
@@ -35,42 +47,49 @@ const IndustryField = () => {
     fetchInitialData();
   }, []);
 
-  // Handle industry selection
   const handleSelectIndustry = (industry) => {
     setSelectedIndustry(industry);
+    setSelectedExperience(""); // Reset experience when new industry is selected
   };
 
-  // Handle workplace selection
   const handleSelectWorkplace = (workplace) => {
     setSelectedWorkplace(workplace);
   };
 
-  // Add industry
+  const handleSelectExperience = (experience) => {
+    setSelectedExperience(experience);
+  };
+
   const handleAddIndustry = async () => {
     if (!selectedIndustry) {
       alert("Vui lòng chọn ngành nghề");
       return;
     }
 
+    if (!selectedExperience) {
+      alert("Vui lòng chọn kinh nghiệm");
+      return;
+    }
+
     try {
       const industryData = { 
-        industry_id: selectedIndustry.id
+        industry_id: selectedIndustry.id,
+        experience: selectedExperience
       };
       await IndustryService.addIndustryProfile(industryData);
       
-      // Refresh user industries
       const updatedUserIndustries = await IndustryService.getAllIndustries();
       setUserIndustries(updatedUserIndustries);
       
       alert("Thêm ngành nghề thành công!");
       setSelectedIndustry(null);
+      setSelectedExperience("");
     } catch (error) {
       console.error('Lỗi khi thêm ngành nghề:', error);
       alert("Có lỗi xảy ra khi thêm ngành nghề");
     }
   };
 
-  // Add workplace
   const handleAddWorkplace = async () => {
     if (!selectedWorkplace) {
       alert("Vui lòng chọn địa điểm làm việc");
@@ -81,10 +100,9 @@ const IndustryField = () => {
       const workplaceData = { 
         workplace_id: selectedWorkplace.id
       };
-      await WorkplaceServicefile.addWorkplaceDetails(workplaceData);  // Dùng API từ workplacefile.service.js
+      await WorkplaceServicefile.addWorkplaceDetails(workplaceData);
       
-      // Refresh user workplaces
-      const updatedUserWorkplaces = await WorkplaceServicefile.getAllWorkplace();  // Dùng API từ workplacefile.service.js
+      const updatedUserWorkplaces = await WorkplaceServicefile.getAllWorkplace();
       setUserWorkplaces(updatedUserWorkplaces);
       
       alert("Thêm địa điểm làm việc thành công!");
@@ -95,12 +113,10 @@ const IndustryField = () => {
     }
   };
 
-  // Delete industry
   const handleDeleteIndustry = async (industryId) => {
     try {
       await IndustryService.deleteIndustryProfile(industryId);
       
-      // Refresh user industries
       const updatedUserIndustries = await IndustryService.getAllIndustries();
       setUserIndustries(updatedUserIndustries);
       
@@ -111,13 +127,11 @@ const IndustryField = () => {
     }
   };
 
-  // Delete workplace
   const handleDeleteWorkplace = async (workplaceId) => {
     try {
-      await WorkplaceServicefile.deleteWorkplaceDetails(workplaceId);  // Dùng API từ workplacefile.service.js
+      await WorkplaceServicefile.deleteWorkplaceDetails(workplaceId);
       
-      // Refresh user workplaces
-      const updatedUserWorkplaces = await WorkplaceServicefile.getAllWorkplace();  // Dùng API từ workplacefile.service.js
+      const updatedUserWorkplaces = await WorkplaceServicefile.getAllWorkplace();
       setUserWorkplaces(updatedUserWorkplaces);
       
       alert("Xóa địa điểm làm việc thành công!");
@@ -127,23 +141,25 @@ const IndustryField = () => {
     }
   };
 
-  // Get industry name by id
   const getIndustryName = (industryId) => {
     const industry = industries.find(ind => ind.id === industryId);
     return industry ? industry.industry_name : 'Ngành nghề không có tên';
   };
 
-  // Get workplace name by id
   const getWorkplaceName = (workplaceId) => {
     const workplace = workplaces.find(wp => wp.id === workplaceId);
     return workplace ? workplace.city : 'Địa điểm không có tên';
+  };
+
+  const getExperienceLabel = (value) => {
+    const option = experienceOptions.find(opt => opt.value === value);
+    return option ? option.label : 'Không xác định';
   };
 
   return (
     <div className="mb-4">
       <h5 className="mb-4">Thông tin ngành nghề và địa điểm làm việc</h5>
       
-      {/* Industry Selection and Add */}
       <Row className="mb-3">
         <Col md={6}>
           <Form.Group className="mb-3">
@@ -165,17 +181,38 @@ const IndustryField = () => {
                 <Dropdown.Item disabled>Không có ngành nghề</Dropdown.Item>
               )}
             </DropdownButton>
+
+            {selectedIndustry && (
+              <Form.Group className="mt-2">
+                <DropdownButton
+                  id="dropdown-experience"
+                  title={selectedExperience ? getExperienceLabel(selectedExperience) : "Chọn kinh nghiệm"}
+                  variant="outline-primary"
+                  style={{ width: '100%' }}
+                >
+                  {experienceOptions.map((option) => (
+                    <Dropdown.Item 
+                      key={option.value} 
+                      onClick={() => handleSelectExperience(option.value)}
+                    >
+                      {option.label}
+                    </Dropdown.Item>
+                  ))}
+                </DropdownButton>
+              </Form.Group>
+            )}
+
             <Button variant="success" className="ms-2 mt-2" onClick={handleAddIndustry}>
               Thêm ngành nghề
             </Button>
           </Form.Group>
 
-          {/* User Industries Table */}
           <Table>
             <tbody>
               {userIndustries.map((industry) => (
                 <tr key={industry.id}>
                   <td>{getIndustryName(industry.industry_id)}</td>
+                  <td>{getExperienceLabel(industry.experience)}</td>
                   <td>
                     <Button 
                       variant="danger" 
@@ -191,7 +228,6 @@ const IndustryField = () => {
           </Table>
         </Col>
 
-        {/* Workplace Selection and Add */}
         <Col md={6}>
           <Form.Group className="mb-3">
             <Form.Label>Chọn địa điểm làm việc</Form.Label>
@@ -217,7 +253,6 @@ const IndustryField = () => {
             </Button>
           </Form.Group>
 
-          {/* User Workplaces Table */}
           <Table>
             <tbody>
               {userWorkplaces.map((workplace) => (

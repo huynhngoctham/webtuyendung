@@ -32,6 +32,7 @@ import {
 
 import JobService from "../services/job.service";
 import SendService from "../services/send.service";
+import ReportService from "../services/report.service";
 
 const JobDetail = () => {
   const { jobId } = useParams();
@@ -40,6 +41,10 @@ const JobDetail = () => {
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportContent, setReportContent] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState("");
   const [applicationForm, setApplicationForm] = useState({
     name: '',
   });
@@ -51,7 +56,6 @@ const JobDetail = () => {
     const fetchJobDetails = async () => {
       try {
         const response = await JobService.getMatchingJobs();
-        // Convert object to array if necessary
         const jobsArray = response && typeof response === 'object' 
           ? Object.values(response) 
           : Array.isArray(response) 
@@ -95,6 +99,32 @@ const JobDetail = () => {
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    if (!reportContent.trim()) {
+      setReportError("Vui lòng nhập nội dung báo cáo");
+      return;
+    }
+
+    setReportLoading(true);
+    setReportError("");
+
+    try {
+      await ReportService.addReport(jobId, reportContent);
+      setShowReportModal(false);
+      setReportContent("");
+      alert("Báo cáo đã được gửi thành công!");
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setReportError("Vui lòng đăng nhập và ứng tuyển trước khi báo cáo");
+      } else {
+        setReportError(error.response?.data?.message || "Không thể gửi báo cáo. Vui lòng thử lại sau.");
+      }
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -248,7 +278,11 @@ const JobDetail = () => {
                 placement="top"
                 overlay={<Tooltip>Báo cáo việc làm không phù hợp</Tooltip>}
               >
-                <Button variant="outline-danger" className="d-flex align-items-center">
+                <Button 
+                  variant="outline-danger" 
+                  className="d-flex align-items-center"
+                  onClick={() => setShowReportModal(true)}
+                >
                   <Flag size={20} />
                 </Button>
               </OverlayTrigger>
@@ -256,6 +290,62 @@ const JobDetail = () => {
           </Card.Body>
         </Card>
 
+        {/* Modal Báo cáo */}
+        <Modal show={showReportModal} onHide={() => setShowReportModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Báo cáo việc làm không phù hợp</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleReportSubmit}>
+              <Form.Group className="mb-3">
+                <Form.Label>Nội dung báo cáo</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  placeholder="Vui lòng nhập lý do báo cáo..."
+                  value={reportContent}
+                  onChange={(e) => setReportContent(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              {reportError && (
+                <Alert variant="danger" className="mb-3">
+                  {reportError}
+                </Alert>
+              )}
+              <div className="d-flex justify-content-end gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setShowReportModal(false)}
+                  disabled={reportLoading}
+                >
+                  Hủy
+                </Button>
+                <Button 
+                  variant="danger" 
+                  type="submit"
+                  disabled={reportLoading || !reportContent.trim()}
+                >
+                  {reportLoading ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Đang gửi...
+                    </>
+                  ) : (
+                    "Gửi báo cáo"
+                  )}
+                </Button>
+              </div>
+            </Form>
+          </Modal.Body>
+        </Modal>
         <Row>
           <Col lg={8}>
             <Card className="border-0 shadow-sm mb-4">

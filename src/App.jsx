@@ -18,7 +18,7 @@ import ItManagement from './components/admin/ItManagement';
 import LockManagement from './components/admin/LockManagement';
 import PostingManagement from './components/admin/PostingManagement';
 import Change_Admin from './components/admin/Change_Admin';
-
+import ReportManagement from './components/admin/ReportManagement';
 
 import JobSeekerLogin from './components/auth/JobSeekerLogin';
 import JobSeekerRegister from './components/auth/JobSeekerRegister';
@@ -100,6 +100,7 @@ const App = () => {
           <Route path="/admin/lock-management" element={<LockManagement />} />
           <Route path="/admin/posting-management" element={<PostingManagement />} />
           <Route path="/admin/change-admin" element={<Change_Admin />} />
+          <Route path="/admin/report-management" element={<ReportManagement />} />
         </Routes>
       </Router>
     </AuthProvider>

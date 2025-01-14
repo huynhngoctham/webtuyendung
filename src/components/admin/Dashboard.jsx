@@ -102,7 +102,7 @@ const Dashboard = () => {
                 <Button
                   variant="outline-success"
                   className="w-100"
-                  onClick={() => navigate('/admin/feedback-management')}
+                  onClick={() => navigate('/admin/report-management')}
                 >
                   Xem danh sách
                 </Button>

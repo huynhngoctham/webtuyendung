@@ -39,8 +39,8 @@ const PostJob = () => {
         requirements: "",
         rank: "",
         isActive: 1,
-        workplacenews: [{ workplace_id: '', homeaddress: '' }],
-        industry: [{ industry_id: '' }],
+        workplacenews: [{ workplace_id: '', homeaddress: '', score: '10' }], // Added score
+        industry: [{ industry_id: '', score: '10', experience: 'none' }], 
         language: [],
         information: []
     });
@@ -53,6 +53,26 @@ const PostJob = () => {
     const [selectedITSkills, setSelectedITSkills] = useState([]);
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+ // Score options
+ const scoreOptions = [
+    { value: "10", label: "10 điểm" },
+    { value: "5", label: "5 điểm" },
+    { value: "2", label: "2 điểm" },
+    { value: "1", label: "1 điểm" }
+];
+
+// Experience options for industry
+const industryExperienceOptions = [
+    { value: "", label: "Kinh Nghiệm" },
+    { value: "chua", label: "Chưa có kinh nghiệm" },
+    { value: "duoi_1", label: "Dưới 1 năm" },
+    { value: "1", label: "1 năm" },
+    { value: "2", label: "2 năm" },
+    { value: "3", label: "3 năm" },
+    { value: "4", label: "4 năm" },
+    { value: "5", label: "5 năm" },
+    { value: "5+", label: "5 năm trở lên" }
+];
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -135,16 +155,73 @@ const PostJob = () => {
 
     const handleAddLanguage = (e) => {
         const selectedLanguageId = parseInt(e.target.value, 10);
-        if (selectedLanguageId && !selectedLanguages.includes(selectedLanguageId)) {
-            setSelectedLanguages(prev => [...prev, selectedLanguageId]);
+        if (selectedLanguageId && !selectedLanguages.some(lang => lang.language_id === selectedLanguageId)) {
+            setSelectedLanguages(prev => [...prev, { language_id: selectedLanguageId, score: "10" }]);
         }
     };
 
     const handleAddITSkill = (e) => {
         const selectedITId = parseInt(e.target.value, 10);
-        if (selectedITId && !selectedITSkills.includes(selectedITId)) {
-            setSelectedITSkills(prev => [...prev, selectedITId]);
+        if (selectedITId && !selectedITSkills.some(it => it.it_id === selectedITId)) {
+            setSelectedITSkills(prev => [...prev, { it_id: selectedITId, score: "10" }]);
         }
+    };
+
+     // Score handlers
+     const handleLanguageScoreChange = (languageId, newScore) => {
+        setSelectedLanguages(prev => 
+            prev.map(lang => 
+                lang.language_id === languageId 
+                    ? { ...lang, score: newScore }
+                    : lang
+            )
+        );
+    };
+
+    const handleITSkillScoreChange = (itId, newScore) => {
+        setSelectedITSkills(prev => 
+            prev.map(it => 
+                it.it_id === itId 
+                    ? { ...it, score: newScore }
+                    : it
+            )
+        );
+    };
+
+    const handleWorkplaceScoreChange = (index, newScore) => {
+        const updatedWorkplaces = [...formData.workplacenews];
+        updatedWorkplaces[index] = {
+            ...updatedWorkplaces[index],
+            score: newScore
+        };
+        setFormData({
+            ...formData,
+            workplacenews: updatedWorkplaces
+        });
+    };
+
+    const handleIndustryScoreChange = (index, newScore) => {
+        const updatedIndustries = [...formData.industry];
+        updatedIndustries[index] = {
+            ...updatedIndustries[index],
+            score: newScore
+        };
+        setFormData({
+            ...formData,
+            industry: updatedIndustries
+        });
+    };
+
+    const handleIndustryExperienceChange = (index, newExperience) => {
+        const updatedIndustries = [...formData.industry];
+        updatedIndustries[index] = {
+            ...updatedIndustries[index],
+            experience: newExperience
+        };
+        setFormData({
+            ...formData,
+            industry: updatedIndustries
+        });
     };
 
     const handleRemoveLanguage = (languageId) => {
@@ -201,11 +278,9 @@ const PostJob = () => {
         return newErrors;
     };
 
+    // Modified submit handler
     const handleSubmit = async (e) => {
         e.preventDefault();
-         // Log giá trị của title và describe
-    console.log("Title:", formData.title);
-    console.log("Describe:", formData.describe);
         const validationErrors = validateForm();
 
         if (Object.keys(validationErrors).length > 0) {
@@ -219,8 +294,8 @@ const PostJob = () => {
 
         const submitData = {
             ...formData,
-            language: selectedLanguages.map(langId => ({ language_id: langId })),
-            information: selectedITSkills.map(itId => ({ it_id: itId }))
+            language: selectedLanguages,
+            information: selectedITSkills
         };
 
         try {
@@ -272,8 +347,8 @@ const PostJob = () => {
             requirements: "",
             rank: "",
             isActive: 1,
-            workplacenews: [{ workplace_id: '', homeaddress: '' }],
-            industry: [{ industry_id: '' }],
+            workplacenews: [{ workplace_id: '', homeaddress: '', score: '10' }], // Added score
+            industry: [{ industry_id: '', score: '10', experience: 'none' }], // Added score and experience
             language: [],
             information: []
         });
@@ -511,55 +586,109 @@ const PostJob = () => {
                     )}
                 </Form.Group>
 
-                <Form.Group className="mb-3">
-                <Form.Label>Ngành nghề <span className="text-danger">*</span></Form.Label>
-                <Form.Control
-                    as="select"
-                    onChange={handleIndustryChange}
-                    isInvalid={!!errors.industry}
-                >
-                    <option value="">Chọn ngành nghề</option>
-                    {industries.map(industry => (
-                        <option 
-                            key={industry.id} 
-                            value={industry.id}
-                            disabled={formData.industry.some(
-                                ind => ind.industry_id === industry.id.toString()
-                            )}
-                        >
-                            {industry.industry_name}
-                        </option>
+                {/* Modified Industry Section */}
+                <div className="industry-section mt-4">
+                    <h4>Ngành nghề</h4>
+                    {formData.industry.map((ind, index) => (
+                        <div key={index} className="industry-item bg-light p-3 mb-3 rounded">
+                            <Row>
+                                <Col md={4}>
+                                    <Form.Group>
+                                        <Form.Label>Ngành nghề</Form.Label>
+                                        <Form.Control
+                                            as="select"
+                                            value={ind.industry_id}
+                                            onChange={(e) => {
+                                                const updatedIndustries = [...formData.industry];
+                                                updatedIndustries[index] = {
+                                                    ...updatedIndustries[index],
+                                                    industry_id: e.target.value
+                                                };
+                                                setFormData({
+                                                    ...formData,
+                                                    industry: updatedIndustries
+                                                });
+                                            }}
+                                        >
+                                            <option value="">Chọn ngành nghề</option>
+                                            {industries.map(industry => (
+                                                <option key={industry.id} value={industry.id}>
+                                                    {industry.industry_name}
+                                                </option>
+                                            ))}
+                                        </Form.Control>
+                                    </Form.Group>
+                                </Col>
+                                <Col md={3}>
+                                    <Form.Group>
+                                        <Form.Label>Điểm</Form.Label>
+                                        <Form.Control
+                                            as="select"
+                                            value={ind.score}
+                                            onChange={(e) => handleIndustryScoreChange(index, e.target.value)}
+                                        >
+                                            {scoreOptions.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </Form.Control>
+                                    </Form.Group>
+                                </Col>
+                                <Col md={3}>
+                                    <Form.Group>
+                                        <Form.Label>Kinh nghiệm</Form.Label>
+                                        <Form.Control
+                                            as="select"
+                                            value={ind.experience}
+                                            onChange={(e) => handleIndustryExperienceChange(index, e.target.value)}
+                                        >
+                                            {industryExperienceOptions.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </Form.Control>
+                                    </Form.Group>
+                                </Col>
+                                <Col md={2}>
+                                    {formData.industry.length > 1 && (
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => {
+ const updatedIndustries = formData.industry.filter((_, i) => i !== index);
+                                                setFormData({
+                                                    ...formData,
+                                                    industry: updatedIndustries
+                                                });
+                                            }}
+                                        >
+                                            Xóa
+                                        </Button>
+                                    )}
+                                </Col>
+                            </Row>
+                        </div>
                     ))}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                    {errors.industry}
-                </Form.Control.Feedback>
-
-                {/* Display selected industries */}
-                <div className="mt-2">
-                    {formData.industry.map((ind, index) => {
-                        const selectedIndustry = industries.find(
-                            i => i.id.toString() === ind.industry_id
-                        );
-                        return selectedIndustry ? (
-                            <span
-                                key={index}
-                                className="badge bg-primary me-2 mb-2 p-2"
-                                style={{ fontSize: '0.9em' }}
-                            >
-                                {selectedIndustry.industry_name}
-                                <button
-                                    type="button"
-                                    className="btn-close btn-close-white ms-2"
-                                    style={{ fontSize: '0.7em' }}
-                                    onClick={() => handleRemoveIndustry(ind.industry_id)}
-                                    aria-label="Remove industry"
-                                />
-                            </span>
-                        ) : null;
-                    })}
+                    {formData.industry.length < 3 && (
+                        <Button
+                            variant="outline-primary"
+                            onClick={() => {
+                                setFormData(prevData => ({
+                                    ...prevData,
+                                    industry: [
+                                        ...prevData.industry,
+                                        { industry_id: '', score: '10', experience: 'none' }
+                                    ]
+                                }));
+                            }}
+                        >
+                            Thêm ngành nghề
+                        </Button>
+                    )}
                 </div>
-            </Form.Group>
+
             <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
                 {/* Workplace Section */}
                 <div className="workplace-section mt-4">
@@ -584,12 +713,13 @@ const PostJob = () => {
                                 <i className="fas fa-plus"></i> Thêm địa điểm
                             </Button>
                         )}
+                        
                     </div>
 
                     {formData.workplacenews.map((workplace, index) => (
                         <div key={index} className="workplace-item bg-light p-3 mb-3 rounded">
                             <Row>
-                                <Col md={5}>
+                                <Col md={4}>
                                     <Form.Group>
                                         <Form.Label>Thành phố <span className="text-danger">*</span></Form.Label>
                                         <Form.Control
@@ -615,14 +745,11 @@ const PostJob = () => {
                                                 </option>
                                             ))}
                                         </Form.Control>
-                                        <Form.Control.Feedback type="invalid">
-                                            {errors[`workplacenews[${index}].workplace_id`]}
-                                        </Form.Control.Feedback>
                                     </Form.Group>
                                 </Col>
-                                <Col md={5}>
+                                <Col md={4}>
                                     <Form.Group>
-                                        <Form.Label>Địa chỉ chi tiết <span className="text-danger">*</span></Form.Label>
+                                        <Form.Label>Địa chỉ chi tiết</Form.Label>
                                         <Form.Control
                                             type="text"
                                             value={workplace.homeaddress}
@@ -637,15 +764,26 @@ const PostJob = () => {
                                                     workplacenews: updatedWorkplaces
                                                 });
                                             }}
-                                            placeholder="Nhập địa chỉ chi tiết"
-                                            isInvalid={!!errors[`workplacenews[${index}].homeaddress`]}
                                         />
-                                        <Form.Control.Feedback type="invalid">
-                                            {errors[`workplacenews[${index}].homeaddress`]}
-                                        </Form.Control.Feedback>
                                     </Form.Group>
                                 </Col>
-                                <Col md={2} className="d-flex align-items-end">
+                                <Col md={3}>
+                                    <Form.Group>
+                                        <Form.Label>Điểm</Form.Label>
+                                        <Form.Control
+                                            as="select"
+                                            value={workplace.score}
+                                            onChange={(e) => handleWorkplaceScoreChange(index, e.target.value)}
+                                        >
+                                            {scoreOptions.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </Form.Control>
+                                    </Form.Group>
+                                </Col>
+                                <Col md={1}>
                                     {formData.workplacenews.length > 1 && (
                                         <Button
                                             variant="danger"
@@ -658,7 +796,7 @@ const PostJob = () => {
                                                 });
                                             }}
                                         >
-                                            <i className="fas fa-trash"></i> Xóa
+                                            Xóa
                                         </Button>
                                     )}
                                 </Col>
@@ -666,70 +804,96 @@ const PostJob = () => {
                         </div>
                     ))}
                 </div>
+
+
                 <hr style={{ borderTop: '2px solid red', margin: '20px 0' }} />
                 {/* Optional Information */}
                 <div className="optional-section mt-4">
                     <h4>Thông tin thêm </h4>
                     
                     <Form.Group className="mb-3">
-                        <Form.Label>Chọn Ngoại Ngữ</Form.Label>
-                        <Form.Control as="select" onChange={handleAddLanguage} value="">
-                            <option value="">Chọn ngoại ngữ</option>
-                            {languages.map((language) => (
-                                <option key={language.id} value={language.id}>
-                                    {language.language_name}
+    <Form.Label>Chọn Ngoại Ngữ</Form.Label>
+    <Form.Control as="select" onChange={handleAddLanguage} value="">
+        <option value="">Chọn ngoại ngữ</option>
+        {languages.map((language) => (
+            <option key={language.id} value={language.id}>
+                {language.language_name}
+            </option>
+        ))}
+    </Form.Control>
+    <div>
+        {selectedLanguages.length > 0 ? (
+            selectedLanguages.map(lang => {
+                const language = languages.find(l => l.id === lang.language_id);
+                return (
+                    <div key={lang.language_id} className="d-flex justify-content-between align-items-center mt-2">
+                        <span>{language ? language.language_name : "Ngôn ngữ không tìm thấy"}</span>
+                        <Form.Control
+                            as="select"
+                            value={lang.score}
+                            onChange={(e) => handleLanguageScoreChange(lang.language_id, e.target.value)}
+                            className="w-auto mx-2"
+                        >
+                            {scoreOptions.map(option => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
                                 </option>
                             ))}
                         </Form.Control>
-                        <div>
-                            {selectedLanguages.length > 0 ? (
-                                selectedLanguages.map(languageId => {
-                                    const language = languages.find(lang => lang.id === languageId);
-                                    return (
-                                        <div key={languageId} className="d-flex justify-content-between align-items-center mt-2">
-                                            <span>{language ? language.language_name : "Ngôn ngữ không tìm thấy"}</span>
-                                            <Button variant="danger" onClick={() => handleRemoveLanguage(languageId)}>
-                                                Xóa
-                                            </Button>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <p>Chưa có ngôn ngữ nào được chọn</p>
-                            )}
-                        </div>
-                    </Form.Group>
+                        <Button variant="danger" onClick={() => handleRemoveLanguage(lang.language_id)}>
+                            Xóa
+                        </Button>
+                    </div>
+                );
+            })
+        ) : (
+            <p>Chưa có ngôn ngữ nào được chọn</p>
+        )}
+    </div>
+</Form.Group>
 
-                    <Form.Group className="mb-3">
-                        <Form.Label>Chọn Kỹ Năng IT</Form.Label>
-                        <Form.Control as="select" onChange={handleAddITSkill} value="">
-                            <option value="">Chọn kỹ năng IT</option>
-                            {itSkills.map((it) => (
-                                <option key={it.id} value={it.id}>
-                                    {it.name}
+<Form.Group className="mb-3">
+    <Form.Label>Chọn Kỹ Năng IT</Form.Label>
+    <Form.Control as="select" onChange={handleAddITSkill} value="">
+        <option value="">Chọn kỹ năng IT</option>
+        {itSkills.map((it) => (
+            <option key={it.id} value={it.id}>
+                {it.name}
+            </option>
+        ))}
+    </Form.Control>
+    <div>
+        {selectedITSkills.length > 0 ? (
+            selectedITSkills.map(it => {
+                const itSkill = itSkills.find(skill => skill.id === it.it_id);
+                return (
+                    <div key={it.it_id} className="d-flex justify-content-between align-items-center mt-2">
+                        <span>{itSkill ? itSkill.name : "Kỹ năng IT không tìm thấy"}</span>
+                        <Form.Control
+                            as="select"
+                            value={it.score}
+                            onChange={(e) => handleITSkillScoreChange(it.it_id, e.target.value)}
+                            className="w-auto mx-2"
+                        >
+                            {scoreOptions.map(option => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
                                 </option>
                             ))}
                         </Form.Control>
-                        <div>
-                            {selectedITSkills.length > 0 ? (
-                                selectedITSkills.map(itId => {
-                                    const itSkill = itSkills.find(it => it.id === itId);
-                                    return (
-                                        <div key={itId} className="d-flex justify-content-between align-items-center mt-2">
-                                            <span>{itSkill ? itSkill.name : "Kỹ năng IT không tìm thấy"}</span>
-                                            <Button variant="danger" onClick={() => handleRemoveITSkill(itId)}>
-                                                Xóa
-                                            </Button>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <p>Chưa có kỹ năng IT nào được chọn</p>
-                            )}
-                        </div>
-                    </Form.Group>
+                        <Button variant="danger" onClick={() => handleRemoveITSkill(it.it_id)}>
+                            Xóa
+                        </Button>
+                    </div>
+                );
+            })
+        ) : (
+            <p>Chưa có kỹ năng IT nào được chọn</p>
+        )}
+    </div>
+</Form.Group>
+
                 </div>
-
                 {/* Submit Section */}
                 <div className="submit-section mt-4 mb-5">
                     <div className="d-grid gap-2">

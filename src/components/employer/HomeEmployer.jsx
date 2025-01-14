@@ -5,16 +5,16 @@ import { FaBriefcase, FaFileAlt, FaUsers, FaLock, FaUserTie } from "react-icons/
 import EmployerHeader from "../layout/EmployerHeader";
 
 const HomeEmployer = () => {
-  // Mock dữ liệu
-  const suggestedProfiles = [
-    { name: "Nguyễn Văn A", position: "Frontend Developer" },
-    { name: "Trần Thị B", position: "Backend Developer" },
-    { name: "Phạm Văn C", position: "UI/UX Designer" },
-  ];
-  const potentialCandidates = [
-    { name: "Lê Văn D", position: "QA Engineer" },
-    { name: "Ngô Thị E", position: "Project Manager" },
-  ];
+  // // Mock dữ liệu
+  // const suggestedProfiles = [
+  //   { name: "Nguyễn Văn A", position: "Frontend Developer" },
+  //   { name: "Trần Thị B", position: "Backend Developer" },
+  //   { name: "Phạm Văn C", position: "UI/UX Designer" },
+  // ];
+  // const potentialCandidates = [
+  //   { name: "Lê Văn D", position: "QA Engineer" },
+  //   { name: "Ngô Thị E", position: "Project Manager" },
+  // ];
 
   return (
     <>
@@ -76,10 +76,10 @@ const HomeEmployer = () => {
             </div>
           </Col>
 
-          {/* Main Content */}
-          <Col md={9} className="p-4">
+          
+          {/* <Col md={9} className="p-4"> */}
             {/* Hồ sơ phù hợp */}
-            <h4 className="mb-3">Hồ sơ phù hợp</h4>
+            {/* <h4 className="mb-3">Hồ sơ phù hợp</h4>
             <Row>
               {suggestedProfiles.map((profile, index) => (
                 <Col md={4} key={index} className="mb-3">
@@ -98,7 +98,7 @@ const HomeEmployer = () => {
             </Row>
 
             {/* Pagination */}
-            <Pagination className="justify-content-center mb-4">
+            {/* <Pagination className="justify-content-center mb-4">
               <Pagination.First />
               <Pagination.Prev />
               <Pagination.Item>{1}</Pagination.Item>
@@ -106,10 +106,10 @@ const HomeEmployer = () => {
               <Pagination.Item>{3}</Pagination.Item>
               <Pagination.Next />
               <Pagination.Last />
-            </Pagination>
+            </Pagination>  */}
 
             {/* Ứng viên tiềm năng */}
-            <h4 className="mb-3">Ứng viên tiềm năng</h4>
+            {/* <h4 className="mb-3">Ứng viên tiềm năng</h4>
             <Row>
               {potentialCandidates.map((candidate, index) => (
                 <Col md={4} key={index} className="mb-3">
@@ -125,8 +125,8 @@ const HomeEmployer = () => {
                   </Card>
                 </Col>
               ))}
-            </Row>
-          </Col>
+            </Row> */}
+          {/* </Col> */}
         </Row>
       </div>
     </>
