@@ -4,10 +4,16 @@ import LanguageService from '../../services/language.service';
 import LanguageProfileService from '../../services/language_profile.service';
 
 const LanguageSkills = ({ profileId, onSave, onCancel }) => {
-  const [languages, setLanguages] = useState([]); // List of all available languages
-  const [selectedLanguages, setSelectedLanguages] = useState([]); // Selected languages for the user
+  const [languages, setLanguages] = useState([]);
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
 
-  // Fetch languages and user language details on component mount
+  const scoreOptions = [
+    { value: 10, label: "10 điểm" },
+    { value: 5, label: "5 điểm" },
+    { value: 2, label: "2 điểm" },
+    { value: 1, label: "1 điểm" }
+  ];
+
   useEffect(() => {
     const fetchLanguages = async () => {
       try {
@@ -15,7 +21,7 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
         setLanguages(allLanguages);
 
         const userLanguages = await LanguageProfileService.getLanguageDetails(profileId);
-        setSelectedLanguages(userLanguages); // API trả về danh sách có cả `id`
+        setSelectedLanguages(userLanguages);
       } catch (error) {
         console.error('Lỗi khi lấy danh sách ngôn ngữ:', error);
       }
@@ -23,21 +29,23 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
     fetchLanguages();
   }, [profileId]);
 
-  // Handle language selection
   const handleSelectLanguage = (language) => {
     if (
       selectedLanguages.length < 10 &&
       !selectedLanguages.some((item) => item.language_id === language.id)
     ) {
-      setSelectedLanguages([...selectedLanguages, { language_id: language.id, level: '' }]);
+      setSelectedLanguages([...selectedLanguages, { 
+        language_id: language.id, 
+        level: '', 
+        score: null 
+      }]);
     }
   };
 
-  // Handle language removal (call API to delete)
   const handleRemoveLanguage = async (id) => {
     try {
-      await LanguageProfileService.deleteLanguageDetails(id); // Xóa bản ghi với `id`
-      setSelectedLanguages(selectedLanguages.filter((item) => item.id !== id)); // Cập nhật danh sách
+      await LanguageProfileService.deleteLanguageDetails(id);
+      setSelectedLanguages(selectedLanguages.filter((item) => item.id !== id));
       alert('Xóa ngôn ngữ thành công!');
     } catch (error) {
       console.error('Lỗi khi xóa ngôn ngữ:', error);
@@ -45,7 +53,6 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
     }
   };
 
-  // Handle proficiency level change
   const handleProficiencyChange = (languageId, proficiency) => {
     setSelectedLanguages(
       selectedLanguages.map((item) =>
@@ -54,12 +61,19 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
     );
   };
 
-  // Handle save functionality
+  const handleScoreChange = (languageId, score) => {
+    setSelectedLanguages(
+      selectedLanguages.map((item) =>
+        item.language_id === languageId ? { ...item, score: score } : item
+      )
+    );
+  };
+
   const handleSave = async () => {
-    const validLanguages = selectedLanguages.filter((item) => item.level); // Chỉ lưu khi có level
+    const validLanguages = selectedLanguages.filter((item) => item.level && item.score !== null);
 
     if (validLanguages.length === 0) {
-      alert('Vui lòng chọn mức độ thành thạo cho các ngôn ngữ.');
+      alert('Vui lòng chọn mức độ thành thạo và điểm cho các ngôn ngữ.');
       return;
     }
 
@@ -71,20 +85,17 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
             (item) => item.language_id === language.language_id
           );
 
+          const languageData = {
+            profile_id: profileId,
+            language_id: language.language_id,
+            level: language.level,
+            score: language.score
+          };
+
           if (existing) {
-            // Update nếu đã tồn tại
-            await LanguageProfileService.updateLanguageDetails(existing.id, {
-              profile_id: profileId,
-              language_id: language.language_id,
-              level: language.level,
-            });
+            await LanguageProfileService.updateLanguageDetails(existing.id, languageData);
           } else {
-            // Add nếu chưa tồn tại
-            await LanguageProfileService.addLanguageDetails({
-              profile_id: profileId,
-              language_id: language.language_id,
-              level: language.level,
-            });
+            await LanguageProfileService.addLanguageDetails(languageData);
           }
         })
       );
@@ -99,17 +110,15 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
     }
   };
 
-  // Function to get language name from the selected languages list
   const getLanguageName = (languageId) => {
     const language = languages.find((lang) => lang.id === languageId);
-    return language ? language.language_name : ''; // Return language name if found, else empty string
+    return language ? language.language_name : '';
   };
 
   return (
     <div className="mb-4">
       <h5>Thông tin ngoại ngữ</h5>
 
-      {/* Dropdown to select language */}
       <Dropdown>
         <DropdownButton
           id="dropdown-language"
@@ -125,22 +134,20 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
         </DropdownButton>
       </Dropdown>
 
-      {/* List of selected languages */}
       <ListGroup className="mt-3">
         {selectedLanguages.map((item) => (
-          <ListGroup.Item key={item.id} className="d-flex flex-column">
+          <ListGroup.Item key={item.id || item.language_id} className="d-flex flex-column">
             <div className="d-flex justify-content-between align-items-center">
               <span>{getLanguageName(item.language_id)}</span>
               <Button
                 variant="danger"
                 size="sm"
-                onClick={() => handleRemoveLanguage(item.id)} // Truyền `id` để xóa
+                onClick={() => handleRemoveLanguage(item.id)}
               >
                 Xóa
               </Button>
             </div>
 
-            {/* Dropdown for proficiency level */}
             <Form.Group className="mt-2">
               <Form.Label>Mức độ thành thạo</Form.Label>
               <Form.Select
@@ -154,11 +161,25 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
                 <option value="fluent">Thành thạo</option>
               </Form.Select>
             </Form.Group>
+
+            <Form.Group className="mt-2">
+              <Form.Label>Điểm đánh giá</Form.Label>
+              <Form.Select
+                value={item.score || ''}
+                onChange={(e) => handleScoreChange(item.language_id, Number(e.target.value))}
+              >
+                <option value="">Chọn điểm</option>
+                {scoreOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
           </ListGroup.Item>
         ))}
       </ListGroup>
 
-      {/* Save and Cancel buttons */}
       <div className="d-flex justify-content-end mt-3">
         <Button variant="secondary" className="me-2" onClick={onCancel}>
           Hủy
@@ -166,7 +187,7 @@ const LanguageSkills = ({ profileId, onSave, onCancel }) => {
         <Button
           variant="primary"
           onClick={handleSave}
-          disabled={selectedLanguages.some((item) => !item.level)}
+          disabled={selectedLanguages.some((item) => !item.level || item.score === null)}
         >
           Lưu ngoại ngữ
         </Button>

@@ -471,7 +471,7 @@ const industryExperienceOptions = [
                                 <option value="Quản lý cấp cao">Quản lý cấp cao</option>
                                 <option value="Quản lý cấp trung">Quản lý cấp trung</option>
                                 <option value="Quản lý nhóm-Giám sát">Quản lý nhóm-Giám sát</option>
-                                <option value="Chuyên giat">Chuyên gia</option>
+                                <option value="Chuyên gia">Chuyên gia</option>
                                 <option value="Chuyên viên-Nhân viên">Chuyên viên-Nhân viên</option>
                                 <option value="Cộng tác viên">Cộng tác viên</option>
                             </Form.Control>

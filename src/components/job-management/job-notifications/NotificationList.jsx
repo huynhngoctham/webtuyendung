@@ -1,25 +1,23 @@
-// src/components/job-management/job-notifications/NotificationList.jsx
 import React from 'react';
-import { Card, Button } from 'react-bootstrap';
-import { FaHeart } from 'react-icons/fa';
+import NotificationCard from './NotificationCard';  // Import NotificationCard
 
-const NotificationList = ({ notifications }) => {
+const NotificationList = ({ notifications, type, onStatusChange }) => {
   return (
     <div>
-      {notifications.map((job) => (
-        <Card key={job.id} className="mb-3 shadow-sm">
-          <Card.Body>
-            <h5>{job.title}</h5>
-            <p>{job.company_name}</p>
-            <p>{job.location}</p>
-            <Button variant="link">
-              <FaHeart color="red" />
-            </Button>
-          </Card.Body>
-        </Card>
-      ))}
+      {notifications.length > 0 ? (
+        notifications.map((notification) => (
+          <NotificationCard 
+            key={notification.id} 
+            notification={notification} 
+            type={type}
+            onStatusChange={onStatusChange}
+          />
+        ))
+      ) : (
+        <p className="text-center">Chưa có thông tin nào để hiển thị.</p>
+      )}
     </div>
   );
 };
 
-export default NotificationList;
+export default NotificationList; // Default export

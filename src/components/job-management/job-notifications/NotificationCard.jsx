@@ -1,30 +1,67 @@
-// NotificationCard.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, Button } from 'react-bootstrap';
-import { FaHeart } from 'react-icons/fa'; // Import heart icon from react-icons
+import { FaHeart, FaUserCheck } from 'react-icons/fa';
+import FollowService from '../../../services/follow.service';
 
-const NotificationCard = ({ notification }) => {
-  const [isSaved, setIsSaved] = useState(false); // Track saved state
+// Hàm định dạng tiền Việt Nam
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+};
 
-  const toggleSave = () => {
-    setIsSaved(!isSaved); // Toggle saved state
+const NotificationCard = ({ notification, type, onStatusChange }) => {
+  const handleStatusChange = async () => {
+    try {
+      if (type === 'employer') {
+        await FollowService.changeFollow(notification.id);
+      } else if (type === 'news') {
+        await FollowService.changeFollowNews(notification.id);
+      }
+      if (onStatusChange) {
+        onStatusChange(notification.id);
+      }
+    } catch (error) {
+      console.error('Error changing status:', error);
+    }
   };
 
   return (
-    <Card className="mb-3">
+    <Card className="mb-3 shadow-sm">
       <Card.Body>
         <div className="d-flex align-items-center">
-          <img src={notification.logo} alt="Company Logo" className="me-3" style={{ width: '50px', height: '50px' }} />
+          <img
+            src={notification.image_url || '/default-image.png'}
+            alt="Company Logo"
+            className="me-3"
+            style={{ width: '50px', height: '50px' }}
+          />
           <div style={{ flex: 1 }}>
             <Card.Title>{notification.title}</Card.Title>
-            <Card.Subtitle className="text-muted">{notification.company}</Card.Subtitle>
+            {notification.company_name && (
+              <Card.Subtitle className="text-muted mb-1">{notification.company_name}</Card.Subtitle>
+            )}
+            {notification.email && (
+              <Card.Subtitle className="text-muted">{notification.email}</Card.Subtitle>
+            )}
             <div className="text-muted">
-              <span>{notification.salary}</span> | <span>{notification.location}</span> | <span>{notification.date}</span>
+              {notification.salary && (
+                <span>{formatCurrency(notification.salary)} | </span>
+              )}
+              {notification.rank && <span>{notification.rank} | </span>}
+              {notification.workingmodel && <span>{notification.workingmodel}</span>}
             </div>
           </div>
-          {/* Heart icon button */}
-          <Button variant="link" onClick={toggleSave}>
-            <FaHeart color={isSaved ? 'red' : 'lightgray'} /> {/* Toggle color based on saved state */}
+          <Button variant="link" onClick={handleStatusChange}>
+            {type === 'employer' ? (
+              <>
+                <FaUserCheck size={20} color="#0d6efd" />
+                <span className="ms-1">Bỏ theo dõi</span>
+              </>
+            ) : (
+              <>
+                <FaHeart size={20} color="red" />
+                <span className="ms-1">Hủy lưu</span>
+              </>
+            )}
           </Button>
         </div>
       </Card.Body>

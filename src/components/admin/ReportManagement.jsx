@@ -59,18 +59,18 @@ const ReportManagement = () => {
                   <th>ID</th>
                   <th>Nội dung báo cáo</th>
                   <th>Tên Người gửi</th>
-                  <th>ID Tin tuyển dụng</th>
+                  <th>Tin tuyển dụng</th>
                 </tr>
               </thead>
               <tbody>
                 {reportList.map((reportData, index) => {
-                  const { report, send } = reportData; // Lấy thông tin từ report và send
+                  const { report, send,news } = reportData; // Lấy thông tin từ report và send
                   return (
                     <tr key={index}>
                       <td>{report?.id || 'N/A'}</td>
                       <td>{report?.content || 'Không có nội dung'}</td>
                       <td>{send?.name || 'Không xác định'}</td>
-                      <td>{send?.recruitment_news_id || 'Không xác định'}</td>
+                      <td>{news?.title || 'Không xác định'}</td>
                     </tr>
                   );
                 })}

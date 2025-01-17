@@ -1,13 +1,48 @@
-// src/components/job-management/job-notifications/NotificationsPage.jsx
-import React from 'react';
-import { useLocation } from 'react-router-dom';
-import { Container, Row, Col } from 'react-bootstrap';  // Nhớ nhập các thành phần từ react-bootstrap
-import Sidebar from '../../layout/Sidebar';  // Đảm bảo Sidebar được nhập đúng
-import NotificationList from './NotificationList';  // Đảm bảo NotificationList được nhập đúng
+import React, { useEffect, useState } from 'react';
+import { Container, Row, Col } from 'react-bootstrap';
+import Sidebar from '../../layout/Sidebar';
+import FollowService from '../../../services/follow.service';
+import NotificationList from './NotificationList'; // Ensure correct import
 
 const NotificationsPage = () => {
-  const location = useLocation();
-  const favorites = location.state?.favorites || [];  // Nhận favorites từ location.state hoặc mặc định là []
+  const [followList, setFollowList] = useState([]);
+  const [followNewsList, setFollowNewsList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  const loadFollowList = async () => {
+    setLoading(true);
+    try {
+      const response = await FollowService.getFollowList();
+      setFollowList(response.data || []);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách theo dõi nhà tuyển dụng:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFollowNewsList = async () => {
+    setLoading(true);
+    try {
+      const response = await FollowService.getFollowNewsList();
+      setFollowNewsList(response.data || []);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách tin tuyển dụng theo dõi:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = () => {
+    // Reload both lists after status change
+    loadFollowList();
+    loadFollowNewsList();
+  };
+
+  useEffect(() => {
+    loadFollowList();
+    loadFollowNewsList();
+  }, []);
 
   return (
     <Container fluid>
@@ -18,15 +53,38 @@ const NotificationsPage = () => {
         <Col md={9}>
           <Row className="my-4">
             <Col>
-              <h2>Việc làm đã lưu</h2>
+              <h2>Danh sách theo dõi nhà tuyển dụng</h2>
             </Col>
           </Row>
           <Row>
             <Col>
-              {favorites.length > 0 ? (
-                <NotificationList notifications={favorites} />
+              {loading ? (
+                <p className="text-center">Đang tải...</p>
               ) : (
-                <p className="text-center">Chưa có việc làm yêu thích nào.</p>
+                <NotificationList 
+                  notifications={followList} 
+                  type="employer"
+                  onStatusChange={handleStatusChange}
+                />
+              )}
+            </Col>
+          </Row>
+
+          <Row className="my-4">
+            <Col>
+              <h2>Danh sách theo dõi tin tuyển dụng</h2>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              {loading ? (
+                <p className="text-center">Đang tải...</p>
+              ) : (
+                <NotificationList 
+                  notifications={followNewsList} 
+                  type="news"
+                  onStatusChange={handleStatusChange}
+                />
               )}
             </Col>
           </Row>
@@ -36,4 +94,4 @@ const NotificationsPage = () => {
   );
 };
 
-export default NotificationsPage;
+export default NotificationsPage;  // Default export

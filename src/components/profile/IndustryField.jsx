@@ -13,6 +13,8 @@ const IndustryField = () => {
   const [userIndustries, setUserIndustries] = useState([]);
   const [userWorkplaces, setUserWorkplaces] = useState([]);
   const [selectedExperience, setSelectedExperience] = useState("");
+  const [selectedIndustryScore, setSelectedIndustryScore] = useState(null);
+  const [selectedWorkplaceScore, setSelectedWorkplaceScore] = useState(null);
 
   const experienceOptions = [
     { value: "", label: "Kinh Nghiệm" },
@@ -24,6 +26,13 @@ const IndustryField = () => {
     { value: "4", label: "4 năm" },
     { value: "5", label: "5 năm" },
     { value: "5+", label: "5 năm trở lên" }
+  ];
+
+  const scoreOptions = [
+    { value: 10, label: "10 điểm" },
+    { value: 5, label: "5 điểm" },
+    { value: 2, label: "2 điểm" },
+    { value: 1, label: "1 điểm" }
   ];
 
   useEffect(() => {
@@ -49,15 +58,25 @@ const IndustryField = () => {
 
   const handleSelectIndustry = (industry) => {
     setSelectedIndustry(industry);
-    setSelectedExperience(""); // Reset experience when new industry is selected
+    setSelectedExperience("");
+    setSelectedIndustryScore(null);
   };
 
   const handleSelectWorkplace = (workplace) => {
     setSelectedWorkplace(workplace);
+    setSelectedWorkplaceScore(null);
   };
 
   const handleSelectExperience = (experience) => {
     setSelectedExperience(experience);
+  };
+
+  const handleSelectIndustryScore = (score) => {
+    setSelectedIndustryScore(score);
+  };
+
+  const handleSelectWorkplaceScore = (score) => {
+    setSelectedWorkplaceScore(score);
   };
 
   const handleAddIndustry = async () => {
@@ -71,10 +90,16 @@ const IndustryField = () => {
       return;
     }
 
+    if (selectedIndustryScore === null) {
+      alert("Vui lòng chọn điểm");
+      return;
+    }
+
     try {
       const industryData = { 
         industry_id: selectedIndustry.id,
-        experience: selectedExperience
+        experience: selectedExperience,
+        score: selectedIndustryScore
       };
       await IndustryService.addIndustryProfile(industryData);
       
@@ -84,6 +109,7 @@ const IndustryField = () => {
       alert("Thêm ngành nghề thành công!");
       setSelectedIndustry(null);
       setSelectedExperience("");
+      setSelectedIndustryScore(null);
     } catch (error) {
       console.error('Lỗi khi thêm ngành nghề:', error);
       alert("Có lỗi xảy ra khi thêm ngành nghề");
@@ -96,9 +122,15 @@ const IndustryField = () => {
       return;
     }
 
+    if (selectedWorkplaceScore === null) {
+      alert("Vui lòng chọn điểm");
+      return;
+    }
+
     try {
       const workplaceData = { 
-        workplace_id: selectedWorkplace.id
+        workplace_id: selectedWorkplace.id,
+        score: selectedWorkplaceScore
       };
       await WorkplaceServicefile.addWorkplaceDetails(workplaceData);
       
@@ -107,6 +139,7 @@ const IndustryField = () => {
       
       alert("Thêm địa điểm làm việc thành công!");
       setSelectedWorkplace(null);
+      setSelectedWorkplaceScore(null);
     } catch (error) {
       console.error('Lỗi khi thêm địa điểm làm việc:', error);
       alert("Có lỗi xảy ra khi thêm địa điểm làm việc");
@@ -183,23 +216,43 @@ const IndustryField = () => {
             </DropdownButton>
 
             {selectedIndustry && (
-              <Form.Group className="mt-2">
-                <DropdownButton
-                  id="dropdown-experience"
-                  title={selectedExperience ? getExperienceLabel(selectedExperience) : "Chọn kinh nghiệm"}
-                  variant="outline-primary"
-                  style={{ width: '100%' }}
-                >
-                  {experienceOptions.map((option) => (
-                    <Dropdown.Item 
-                      key={option.value} 
-                      onClick={() => handleSelectExperience(option.value)}
-                    >
-                      {option.label}
-                    </Dropdown.Item>
-                  ))}
-                </DropdownButton>
-              </Form.Group>
+              <>
+                <Form.Group className="mt-2">
+                  <DropdownButton
+                    id="dropdown-experience"
+                    title={selectedExperience ? getExperienceLabel(selectedExperience) : "Chọn kinh nghiệm"}
+                    variant="outline-primary"
+                    style={{ width: '100%' }}
+                  >
+                    {experienceOptions.map((option) => (
+                      <Dropdown.Item 
+                        key={option.value} 
+                        onClick={() => handleSelectExperience(option.value)}
+                      >
+                        {option.label}
+                      </Dropdown.Item>
+                    ))}
+                  </DropdownButton>
+                </Form.Group>
+
+                <Form.Group className="mt-2">
+                  <DropdownButton
+                    id="dropdown-industry-score"
+                    title={selectedIndustryScore !== null ? `${selectedIndustryScore} điểm` : "Chọn điểm"}
+                    variant="outline-primary"
+                    style={{ width: '100%' }}
+                  >
+                    {scoreOptions.map((option) => (
+                      <Dropdown.Item 
+                        key={option.value} 
+                        onClick={() => handleSelectIndustryScore(option.value)}
+                      >
+                        {option.label}
+                      </Dropdown.Item>
+                    ))}
+                  </DropdownButton>
+                </Form.Group>
+              </>
             )}
 
             <Button variant="success" className="ms-2 mt-2" onClick={handleAddIndustry}>
@@ -213,6 +266,7 @@ const IndustryField = () => {
                 <tr key={industry.id}>
                   <td>{getIndustryName(industry.industry_id)}</td>
                   <td>{getExperienceLabel(industry.experience)}</td>
+                  <td>{industry.score} điểm</td>
                   <td>
                     <Button 
                       variant="danger" 
@@ -248,6 +302,27 @@ const IndustryField = () => {
                 <Dropdown.Item disabled>Không có địa điểm làm việc</Dropdown.Item>
               )}
             </DropdownButton>
+
+            {selectedWorkplace && (
+              <Form.Group className="mt-2">
+                <DropdownButton
+                  id="dropdown-workplace-score"
+                  title={selectedWorkplaceScore !== null ? `${selectedWorkplaceScore} điểm` : "Chọn điểm"}
+                  variant="outline-primary"
+                  style={{ width: '100%' }}
+                >
+                  {scoreOptions.map((option) => (
+                    <Dropdown.Item 
+                      key={option.value} 
+                      onClick={() => handleSelectWorkplaceScore(option.value)}
+                    >
+                      {option.label}
+                    </Dropdown.Item>
+                  ))}
+                </DropdownButton>
+              </Form.Group>
+            )}
+
             <Button variant="success" className="ms-2 mt-2" onClick={handleAddWorkplace}>
               Thêm địa điểm làm việc
             </Button>
@@ -258,6 +333,7 @@ const IndustryField = () => {
               {userWorkplaces.map((workplace) => (
                 <tr key={workplace.id}>
                   <td>{getWorkplaceName(workplace.workplace_id)}</td>
+                  <td>{workplace.score} điểm</td>
                   <td>
                     <Button 
                       variant="danger" 

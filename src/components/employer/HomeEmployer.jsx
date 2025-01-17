@@ -1,34 +1,49 @@
-import React from "react";
-import { Row, Col, Card, Pagination, Button, ListGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react"; 
+import { Row, Col, Card, Pagination, ListGroup } from "react-bootstrap";
 import { FaBriefcase, FaFileAlt, FaUsers, FaLock, FaUserTie } from "react-icons/fa";
 import EmployerHeader from "../layout/EmployerHeader";
+import MatchProfileService from "../../services/match.profile.service";
 
 const HomeEmployer = () => {
-  // // Mock dữ liệu
-  // const suggestedProfiles = [
-  //   { name: "Nguyễn Văn A", position: "Frontend Developer" },
-  //   { name: "Trần Thị B", position: "Backend Developer" },
-  //   { name: "Phạm Văn C", position: "UI/UX Designer" },
-  // ];
-  // const potentialCandidates = [
-  //   { name: "Lê Văn D", position: "QA Engineer" },
-  //   { name: "Ngô Thị E", position: "Project Manager" },
-  // ];
+  const [matchingProfiles, setMatchingProfiles] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const profilesPerPage = 6;
+
+  useEffect(() => {
+    fetchMatchingProfiles();
+  }, []);
+
+  const fetchMatchingProfiles = async () => {
+    try {
+      const response = await MatchProfileService.getMatchingProfiles();
+      setMatchingProfiles(response);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching matching profiles:", error);
+      setIsLoading(false);
+    }
+  };
+
+  // Pagination logic
+  const indexOfLastProfile = currentPage * profilesPerPage;
+  const indexOfFirstProfile = indexOfLastProfile - profilesPerPage;
+  const currentProfiles = matchingProfiles.slice(indexOfFirstProfile, indexOfLastProfile);
+  const totalPages = Math.ceil(matchingProfiles.length / profilesPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <>
-      {/* Header */}
       <EmployerHeader />
 
-      {/* Main Layout */}
       <div className="container-fluid">
-        {/* Logo (Row riêng biệt để kéo dài toàn màn hình trừ sidebar) */}
         <Row className="bg-white">
           <Col md={{ span: 9, offset: 3 }} className="p-0">
             <div className="text-center">
               <img
-                src="https://cdn1.vieclam24h.vn/images/seeker-banner/2024/09/06/Banner-giu%CC%9B%CC%83a-trang-chu%CC%89_-Desktop_1280x320_172559103332.jpg" // Thay bằng logo của bạn
+                src="https://cdn1.vieclam24h.vn/images/seeker-banner/2024/09/06/Banner-giu%CC%9B%CC%83a-trang-chu%CC%89_-Desktop_1280x320_172559103332.jpg"
                 alt="Logo"
                 style={{ width: "100%", objectFit: "cover", height: "150px" }}
               />
@@ -37,7 +52,6 @@ const HomeEmployer = () => {
         </Row>
 
         <Row>
-          {/* Sidebar */}
           <Col md={3} className="bg-light border-end" style={{ minHeight: "100vh", paddingTop: "20px" }}>
             <div className="px-3">
               <h5 className="mb-4">QUẢN LÝ</h5>
@@ -60,12 +74,12 @@ const HomeEmployer = () => {
                     Quản lý ứng viên
                   </Link>
                 </ListGroup.Item>
-                <ListGroup.Item>
-                <Link to="/employer/posting-jobs" className="text-decoration-none text-dark">
-                  <FaUsers className="me-2" />
+                {/* <ListGroup.Item>
+                  <Link to="/employer/posting-jobs" className="text-decoration-none text-dark">
+                    <FaUsers className="me-2" />
                     Gói dịch vụ
-                 </Link>
-                </ListGroup.Item>
+                  </Link>
+                </ListGroup.Item> */}
                 <ListGroup.Item>
                   <Link to="/employer/change-password" className="text-decoration-none text-dark">
                     <FaLock className="me-2" />
@@ -76,57 +90,83 @@ const HomeEmployer = () => {
             </div>
           </Col>
 
-          
-          {/* <Col md={9} className="p-4"> */}
-            {/* Hồ sơ phù hợp */}
-            {/* <h4 className="mb-3">Hồ sơ phù hợp</h4>
-            <Row>
-              {suggestedProfiles.map((profile, index) => (
-                <Col md={4} key={index} className="mb-3">
-                  <Card className="shadow-sm">
-                    <Card.Body className="text-center">
-                      <FaUserTie size={32} className="text-primary mb-2" />
-                      <Card.Title>{profile.name}</Card.Title>
-                      <Card.Text className="text-muted">{profile.position}</Card.Text>
-                      <Button variant="primary" size="sm">
-                        Xem chi tiết
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
+          <Col md={9} className="p-4">
+            <h4 className="mb-3">Hồ sơ phù hợp</h4>
+            {isLoading ? (
+              <div className="text-center">Đang tải...</div>
+            ) : (
+              <>
+                <Row>
+                  {currentProfiles.map((profile, index) => (
+                    <Col md={4} key={index} className="mb-3">
+                      <Card className="shadow-sm h-100">
+                        <Card.Body className="text-center d-flex flex-column">
+                          {profile.image_url ? (
+                            <img
+                              src={profile.image_url}
+                              alt={profile.name}
+                              className="rounded-circle mx-auto mb-2"
+                              style={{ width: "64px", height: "64px", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <FaUserTie size={32} className="text-primary mb-2 mx-auto" />
+                          )}
+                          <Card.Title>{profile.fullname}</Card.Title>
+                          <Card.Text className="text-muted">
+                            Điểm phù hợp: {profile.match_count}
+                          </Card.Text>
+                          <div className="mt-2">
+                            <Card.Text className="mb-1">
+                              <small>Kinh nghiệm: {profile.experience || "Chưa có"}</small>
+                            </Card.Text>
+                            <Card.Text className="mb-1">
+                              <small>Cấp bậc: {profile.rank}</small>
+                            </Card.Text>
+                            <Card.Text className="mb-1">
+                              <small>Email: {profile.email}</small>
+                            </Card.Text>
+                            <Card.Text className="mb-1">
+                              <small>Điện thoại: {profile.phone_number}</small>
+                            </Card.Text>
+                            <Card.Text className="mb-1">
+                              <small>Địa chỉ: {profile.address}</small>
+                            </Card.Text>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
 
-            {/* Pagination */}
-            {/* <Pagination className="justify-content-center mb-4">
-              <Pagination.First />
-              <Pagination.Prev />
-              <Pagination.Item>{1}</Pagination.Item>
-              <Pagination.Item>{2}</Pagination.Item>
-              <Pagination.Item>{3}</Pagination.Item>
-              <Pagination.Next />
-              <Pagination.Last />
-            </Pagination>  */}
-
-            {/* Ứng viên tiềm năng */}
-            {/* <h4 className="mb-3">Ứng viên tiềm năng</h4>
-            <Row>
-              {potentialCandidates.map((candidate, index) => (
-                <Col md={4} key={index} className="mb-3">
-                  <Card className="shadow-sm">
-                    <Card.Body className="text-center">
-                      <FaUserTie size={32} className="text-warning mb-2" />
-                      <Card.Title>{candidate.name}</Card.Title>
-                      <Card.Text className="text-muted">{candidate.position}</Card.Text>
-                      <Button variant="primary" size="sm">
-                        Xem chi tiết
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row> */}
-          {/* </Col> */}
+                {totalPages > 1 && (
+                  <Pagination className="justify-content-center mt-4">
+                    <Pagination.First onClick={() => paginate(1)} disabled={currentPage === 1} />
+                    <Pagination.Prev
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    />
+                    {[...Array(totalPages)].map((_, index) => (
+                      <Pagination.Item
+                        key={index + 1}
+                        active={index + 1 === currentPage}
+                        onClick={() => paginate(index + 1)}
+                      >
+                        {index + 1}
+                      </Pagination.Item>
+                    ))}
+                    <Pagination.Next
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    />
+                    <Pagination.Last
+                      onClick={() => paginate(totalPages)}
+                      disabled={currentPage === totalPages}
+                    />
+                  </Pagination>
+                )}
+              </>
+            )}
+          </Col>
         </Row>
       </div>
     </>

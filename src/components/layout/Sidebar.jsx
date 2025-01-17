@@ -40,9 +40,9 @@ const Sidebar = () => {
                 <Nav.Link as={Link} to="/jobs/saved" className="text-dark d-flex align-items-center" style={{ marginBottom: '1rem' }}>
                     <FaHeart className="me-2" /> Việc làm đã lưu
                 </Nav.Link>
-                <Nav.Link as={Link} to="/jobs/pending" className="text-dark d-flex align-items-center" style={{ marginBottom: '1rem' }}>
+                {/* <Nav.Link as={Link} to="/jobs/pending" className="text-dark d-flex align-items-center" style={{ marginBottom: '1rem' }}>
                     <FaClock className="me-2" /> Việc làm chờ ứng tuyển
-                </Nav.Link>
+                </Nav.Link> */}
                
             </div>
         </div>

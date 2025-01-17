@@ -28,11 +28,14 @@ import {
   Award,
   BookOpen,
   CheckCircle,
+  UserPlus,
+  UserMinus,
 } from 'lucide-react';
 
 import JobService from "../services/job.service";
 import SendService from "../services/send.service";
 import ReportService from "../services/report.service";
+import FollowService from "../services/follow.service";
 
 const JobDetail = () => {
   const { jobId } = useParams();
@@ -40,6 +43,9 @@ const JobDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportContent, setReportContent] = useState("");
@@ -78,6 +84,45 @@ const JobDetail = () => {
 
     fetchJobDetails();
   }, [jobId]);
+
+  const handleSaveNews = async () => {
+    if (saveLoading) return;
+    
+    setSaveLoading(true);
+    try {
+      const response = await FollowService.changeFollowNews(jobId);
+      setSaved(!saved);
+      alert(response.message);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        alert('Vui lòng đăng nhập để lưu tin tuyển dụng');
+      } else {
+        alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
+      }
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (followLoading) return;
+    
+    setFollowLoading(true);
+    try {
+      const response = await FollowService.changeFollow(jobDetails.employer.id);
+      setFollowing(!following);
+      // Hiển thị thông báo từ API
+      alert(response.message);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        alert('Vui lòng đăng nhập để theo dõi nhà tuyển dụng');
+      } else {
+        alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
+      }
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const handleApplicationSubmit = async (e) => {
     e.preventDefault();
@@ -213,7 +258,7 @@ const JobDetail = () => {
                     {jobDetails.workingmodel}
                   </span>
                   <span className="badge bg-info">
-                    Phù hợp {jobDetails.match_count}/9
+                    Phù hợp {jobDetails.match_count}/100
                   </span>
                 </div>
                 <h1 className="display-6 mb-2">{jobDetails.title}</h1>
@@ -269,10 +314,23 @@ const JobDetail = () => {
               <Button 
                 variant={saved ? "success" : "outline-primary"}
                 className="d-flex align-items-center"
-                onClick={() => setSaved(!saved)}
+                onClick={handleSaveNews}
+                disabled={saveLoading}
               >
-                <Bookmark size={20} className="me-2" />
-                {saved ? "Đã lưu" : "Lưu tin"}
+                {saveLoading ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <>
+                    <Bookmark size={20} className="me-2" />
+                    {saved ? "Đã lưu" : "Lưu tin"}
+                  </>
+                )}
               </Button>
               <OverlayTrigger
                 placement="top"
@@ -377,7 +435,7 @@ const JobDetail = () => {
                             <div>
                               <div className="text-muted small">Trình độ</div>
                               <div className="fw-medium">{jobDetails.qualifications}</div>
-                            </div>
+</div>
                           </div>
                         </ListGroup.Item>
                       </ListGroup>
@@ -432,10 +490,38 @@ const JobDetail = () => {
             <div className="sticky-top" style={{ top: "20px" }}>
               <Card className="border-0 shadow-sm mb-4">
                 <Card.Body>
-                  <h4 className="mb-4">
-                    <Building size={24} className="me-2 text-primary" />
-                    Thông tin công ty
-                  </h4>
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h4 className="mb-0">
+                      <Building size={24} className="me-2 text-primary" />
+                      Thông tin công ty
+                    </h4>
+                    <Button
+                      variant={following ? "success" : "outline-primary"}
+                      className="d-flex align-items-center"
+                      onClick={handleFollow}
+                      disabled={followLoading}
+                    >
+                      {followLoading ? (
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      ) : following ? (
+                        <>
+                          <UserMinus size={18} className="me-2" />
+                          Theo dỗi
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus size={18} className="me-2" />
+                          Đang theo dõi
+                        </>
+                      )}
+                    </Button>
+                  </div>
 
                   <ListGroup variant="flush">
                     <ListGroup.Item className="px-0">
@@ -473,7 +559,6 @@ const JobDetail = () => {
             </div>
           </Col>
         </Row>
-
         <Modal
           show={showApplicationModal}
           onHide={() => {

@@ -1,6 +1,7 @@
+// AppliedJobList.js
 import React, { useEffect, useState } from 'react';
 import { Table, Spinner, Alert } from 'react-bootstrap';
-import SendService from '../../../services/send.service'; // API service
+import SendService from '../../../services/send.service';
 import AppliedJobCard from './AppliedJobCard';
 
 const AppliedJobList = () => {
@@ -25,9 +26,11 @@ const AppliedJobList = () => {
   }
 
   if (error) {
-    return <Alert variant="danger" className="text-center mt-5">
-      Không thể tải danh sách công việc: {error.message}
-    </Alert>;
+    return (
+      <Alert variant="danger" className="text-center mt-5">
+        Không thể tải danh sách công việc: {error.message}
+      </Alert>
+    );
   }
 
   return (

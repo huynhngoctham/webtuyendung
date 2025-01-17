@@ -1,3 +1,4 @@
+// AppliedJobsPage.js
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import Sidebar from '../../layout/Sidebar';
@@ -7,12 +8,9 @@ const AppliedJobsPage = () => {
   return (
     <Container fluid>
       <Row>
-        {/* Sidebar column */}
         <Col md={3}>
           <Sidebar />
         </Col>
-
-        {/* Main content column */}
         <Col md={9}>
           <Row className="my-4">
             <Col>

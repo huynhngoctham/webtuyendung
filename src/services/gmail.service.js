@@ -57,7 +57,31 @@ const GmailService = {
   formatDateForAPI(date) {
     const pad = (num) => String(num).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  }
+  },
+
+// gửi mail cho nhà tuyển dụng
+sendEmailToEmployer(data) {
+    if (!data.email || !data.message) {
+      return Promise.reject(new Error('Email and message are required'));
+    }
+  
+    return apiClient
+      .post('/candidate/sendEmail', {
+        email: data.email,
+        message: data.message,
+      })
+      .then((response) => {
+        if (response.data && response.data.message) {
+          console.log('Success:', response.data.message);
+        }
+        return response.data;
+      })
+      .catch((error) => {
+        console.error('Error sending email:', error.response?.data || error.message);
+        throw error;
+      });
+  },
+  
 };
 
 export default GmailService;

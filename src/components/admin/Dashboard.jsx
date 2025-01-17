@@ -26,7 +26,7 @@ const Dashboard = () => {
       <Container>
         <Row className="my-4">
           {/* Card for Candidate Management */}
-          <Col md={3} className="mb-4">
+          {/* <Col md={3} className="mb-4">
             <Card className="h-100 shadow-lg border-light">
               <Card.Body>
                 <Card.Title className="text-success text-center">Quản lý hồ sơ ứng viên</Card.Title>
@@ -39,7 +39,7 @@ const Dashboard = () => {
                 </Button>
               </Card.Body>
             </Card>
-          </Col>
+          </Col> */}
 
           {/* Card for Account Management */}
           <Col md={3} className="mb-4">
@@ -58,7 +58,7 @@ const Dashboard = () => {
           </Col>
 
           {/* Card for Job Management */}
-          <Col md={3} className="mb-4">
+          {/* <Col md={3} className="mb-4">
             <Card className="h-100 shadow-lg border-light">
               <Card.Body>
                 <Card.Title className="text-success text-center">Quản lý tin tuyển dụng</Card.Title>
@@ -71,7 +71,7 @@ const Dashboard = () => {
                 </Button>
               </Card.Body>
             </Card>
-          </Col>
+          </Col> */}
 
           {/* Card for Billing Management */}
           <Col md={3} className="mb-4">

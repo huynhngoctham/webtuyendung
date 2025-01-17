@@ -1,59 +1,46 @@
-// src/components/job/TopCompanies.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import FollowService from '../../services/follow.service';  // Import service
 
 const TopCompanies = () => {
-    const companies = [
-        {
-            name: 'FOXCONN INDUSTRIAL',
-            logo: 'https://vieclam24h.vn/images/uploads/28494/2023/07/18/logo-foxconn-cong-ty-tnhh-foxconn-technology-group_1689683184.jpg',
-            link: '/company/1'
-        },
-        {
-            name: 'WA PROJECTS LIMITED',
-            logo: 'https://vieclam24h.vn/images/companies/2023/08/02/va-projects-limited_1690938234.png',
-            link: '/company/2'
-        },
-        {
-            name: 'UOB VIETNAM',
-            logo: 'https://vieclam24h.vn/images/uploads/35058/2023/08/02/uob-logo_1690989189.png',
-            link: '/company/3'
-        },
-        {
-            name: 'MUFG BANK',
-            logo: 'https://vieclam24h.vn/images/companies/2023/07/24/mufg-bank_1690151928.png',
-            link: '/company/4'
-        },
-        {
-            name: 'MONDELEZ KINH ĐÔ',
-            logo: 'https://vieclam24h.vn/images/uploads/13312/2023/08/02/mondelēz-kinh-đô_1690947176.png',
-            link: '/company/5'
-        },
-        {
-            name: 'VAS',
-            logo: 'https://vieclam24h.vn/images/companies/2023/08/02/vas_1690989957.png',
-            link: '/company/6'
-        },
-    ];
+    const [companies, setCompanies] = useState([]); // State để lưu danh sách các công ty
+    const [loading, setLoading] = useState(true); // State để xử lý trạng thái loading
+
+    useEffect(() => {
+        // Gọi API khi component được render
+        FollowService.getTopFollowedEmployers()
+            .then((data) => {
+                setCompanies(data); // Lưu danh sách nhà tuyển dụng vào state
+                setLoading(false); // Dừng loading khi nhận được dữ liệu
+            })
+            .catch((error) => {
+                console.error('Lỗi khi lấy danh sách nhà tuyển dụng:', error);
+                setLoading(false); // Dừng loading ngay cả khi có lỗi
+            });
+    }, []); // Chỉ gọi một lần khi component được mount
+
+    if (loading) {
+        return <div>Loading...</div>; // Hiển thị thông báo khi đang tải dữ liệu
+    }
 
     return (
         <div className="my-4">
-            <h3 className="text-start font-weight-bold mb-4 text-primary">Các Công Ty Hàng Đầu</h3> {/* Change text color here */}
+            <h3 className="text-start font-weight-bold mb-4 text-primary">Các Công Ty Hàng Đầu</h3>
             <Row>
                 {companies.map((company) => (
-                    <Col key={company.name} xs={12} sm={6} md={4} lg={2} className="mb-3">
+                    <Col key={company.id} xs={12} sm={6} md={4} lg={2} className="mb-3">
                         <Card className="shadow border-0 h-100 hover-card">
-                            <Link to={company.link} className="text-decoration-none">
+                            <Link to={`/company/${company.id}`} className="text-decoration-none">
                                 <Card.Body className="d-flex flex-column align-items-center justify-content-center p-4">
                                     <Card.Img
                                         variant="top"
-                                        src={company.logo}
+                                        src={company.image_url || 'default-logo.png'}  // Nếu không có ảnh, dùng ảnh mặc định
                                         style={{ width: 'auto', maxHeight: '60px', objectFit: 'contain' }}
                                         className="mb-2"
                                     />
                                     <Card.Title className="text-center fw-bold fs-6 text-dark">{company.name}</Card.Title>
-                                    <Button variant="light" className="text-primary mt-2 px-4 py-2 rounded" size="sm">Việc mới</Button>
+                                    
                                 </Card.Body>
                             </Link>
                         </Card>
@@ -61,7 +48,6 @@ const TopCompanies = () => {
                 ))}
             </Row>
 
-            {/* CSS for hover effect */}
             <style jsx>{`
                 .hover-card {
                     transition: transform 0.3s ease, box-shadow 0.3s ease;
